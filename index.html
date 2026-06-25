@@ -503,10 +503,13 @@ function logResult(acc, pace){
   const opLabel = op==="add"?"add":op==="sub"?"sub":"mixed";
   const payload={
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
+    sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
     mode:`${opLabel} ≤${range}, ${duration}s`,
+    op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${correct}/${attempts}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
+    kaiju: bossesDefeated, bestStreak: bestCombo, qlog: qlog,
     num:"", mult:"", word:"", read:""
   };
   note.textContent="Saving result…";
