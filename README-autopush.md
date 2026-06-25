@@ -24,16 +24,17 @@ Sign in once — Windows remembers it, so every future push is silent.
 > If `git push` is rejected because the remote is ahead (you've edited via the
 > GitHub website), run `git pull --rebase origin main` first, then push.
 
-## Turn on auto-push
+## Turn on auto-push (manual)
 
-Pick one:
+When you sit down to edit the game, double-click **`start-autopush.cmd`**.
+A small window opens and watches the folder; every change you save is committed
+and pushed automatically. Leave it open while you work, and close it (or press
+Ctrl+C) when you're done.
 
-- **Simple:** double-click **`start-autopush.cmd`**. A window opens and watches
-  the folder. Leave it open while you work; close it (or Ctrl+C) to stop.
-- **Always-on:** double-click **`install-autopush-task.cmd`** once. It registers
-  a Scheduled Task that runs the watcher hidden at every logon. Start it
-  immediately with `schtasks /Run /TN "KaijuBlitz AutoPush"`, or just log out and
-  back in.
+> **Why manual?** This is a managed work machine. Its security software blocks
+> background auto-start methods (Task Scheduler returned "Access is denied", and
+> a Startup-folder launcher was removed automatically). Starting the watcher
+> yourself when you need it is the reliable, IT-friendly approach.
 
 ## How it works
 
