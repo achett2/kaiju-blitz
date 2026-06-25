@@ -390,7 +390,7 @@ function banner(t){ const b=$("banner"); b.textContent=t; b.classList.remove("on
   clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>b.classList.remove("on"),1100); }
 
 function showFact(){
-  cur=nextFact(); entry="";
+  cur=nextFact(); entry=""; curWrong=0;
   $("fact").textContent=cur.text+" ="; $("entry").innerHTML="&nbsp;"; $("entry").classList.remove("bad");
   factShownAt=performance.now();
 }
