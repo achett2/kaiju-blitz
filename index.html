@@ -237,7 +237,17 @@ function seg(id, set){
       b.classList.add("on"); set(b.getAttribute("data-v")); };
   });
 }
-seg("op", v=>op=v); seg("range", v=>range=+v); seg("time", v=>duration=+v); seg("player", v=>player=v);
+seg("op", v=>op=v); seg("range", v=>range=+v); seg("time", v=>duration=+v);
+
+/* ---- who's playing: dedicated first screen ---- */
+function pickPlayer(v){
+  player = v;
+  $("who-label").textContent = v==="jacob" ? "🦖 Jacob" : "🧪 Test";
+  $("who").classList.add("hidden");
+  $("start").classList.remove("hidden");
+}
+document.querySelectorAll("#who .pbtn").forEach(b=> b.onclick=()=>pickPlayer(b.getAttribute("data-v")));
+$("change-player").onclick=()=>{ $("start").classList.add("hidden"); $("who").classList.remove("hidden"); };
 
 /* ---- original monster artwork (all custom SVG) ---- */
 function heroSVG(){return `
