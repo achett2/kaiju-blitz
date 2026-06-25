@@ -47,6 +47,5 @@ Pages rebuilds within about a minute. Activity is logged to `autopush.log`
 
 - `.gitattributes` forces LF line endings on the web files so commits stay clean
   (no more phantom "whole file changed" diffs from CRLF/LF).
-- To stop auto-push: close the `start-autopush.cmd` window, or
-  `schtasks /Delete /TN "KaijuBlitz AutoPush" /F` if you installed the task.
+- To stop auto-push: close the `start-autopush.cmd` window (or Ctrl+C in it).
 - `autopush.log` and any `*.junk` files are git-ignored and never pushed.
