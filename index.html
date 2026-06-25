@@ -125,16 +125,19 @@
   <h1>🦖 KAIJU BLITZ</h1>
   <p class="best" id="best-banner">Loading record…</p>
 
+  <!-- WHO'S PLAYING (first screen) -->
+  <div id="who">
+    <div class="who">
+      <h2>Who's playing?</h2>
+      <button class="pbtn jacob" data-v="jacob">🦖 Jacob<small>Scores are saved</small></button>
+      <button class="pbtn" data-v="test">🧪 Test<small>Practice — not saved</small></button>
+    </div>
+  </div>
+
   <!-- START -->
-  <div id="start">
+  <div id="start" class="hidden">
+    <p class="playingas">Playing as <b id="who-label">🦖 Jacob</b><a id="change-player">change</a></p>
     <div class="opts">
-      <div class="opt-group">
-        <div class="lbl">WHO'S PLAYING? <span style="color:#5f7d6c;">(Test runs aren't saved)</span></div>
-        <div class="seg" id="player">
-          <button data-v="jacob" class="on">🦖 Jacob</button>
-          <button data-v="test">🧪 Test</button>
-        </div>
-      </div>
       <div class="opt-group">
         <div class="lbl">OPERATION</div>
         <div class="seg" id="op">
