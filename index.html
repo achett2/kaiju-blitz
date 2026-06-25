@@ -362,8 +362,8 @@ function loadBest(){
 /* ---- facts ---- */
 function nextFact(){
   let kind = op==="mix" ? (Math.random()<0.5?"add":"sub") : op;
-  if(kind==="add"){ const a=randInt(1,range-1), b=randInt(1,range-a); return {text:`${a} + ${b}`, ans:a+b}; }
-  const m=randInt(2,range), s=randInt(1,m-1); return {text:`${m} − ${s}`, ans:m-s};
+  if(kind==="add"){ const a=randInt(1,range-1), b=randInt(1,range-a); return {text:`${a} + ${b}`, ans:a+b, kind}; }
+  const m=randInt(2,range), s=randInt(1,m-1); return {text:`${m} − ${s}`, ans:m-s, kind};
 }
 
 /* ---- state ---- */
