@@ -435,6 +435,7 @@ function tap(d){
   const test=entry+d, ansStr=String(cur.ans);
   if(test===ansStr){
     const dt=performance.now()-factShownAt; totalSolveMs+=dt;
+    qlog.push({ q:cur.text, op:cur.kind, ans:cur.ans, sec:Math.round(dt/10)/100, wrong:curWrong, phase:phase });
     correct++; smashed=correct; combo++; bestCombo=Math.max(bestCombo,combo);
     score += 10 + (combo-1)*2; updateHud();
     const hero=$("hero"); hero.classList.add("stomp"); setTimeout(()=>hero.classList.remove("stomp"),140);
