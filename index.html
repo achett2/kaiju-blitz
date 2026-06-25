@@ -104,6 +104,20 @@
   .tile b{display:block; font-family:"Baloo 2"; font-size:26px; color:var(--green);}
   .tile span{font-size:11px; color:var(--dim); letter-spacing:.04em;}
   .save-note{color:var(--dim); font-size:13px; min-height:18px; margin:8px 0;}
+  /* ---- who's playing screen ---- */
+  .who{display:flex; flex-direction:column; gap:14px; margin-top:20px;}
+  .who h2{font-family:"Baloo 2"; text-align:center; color:var(--ink); font-size:23px; margin:4px 0 6px;}
+  .pbtn{font-family:"Baloo 2"; font-weight:800; font-size:26px; padding:22px 16px; cursor:pointer;
+        border-radius:18px; border:2px solid #2c4a3b; background:#10211b; color:var(--ink);
+        display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .pbtn small{font-size:13px; font-weight:700; color:var(--dim); letter-spacing:.03em; font-family:"Nunito";}
+  .pbtn.jacob{border-color:var(--green); box-shadow:0 0 18px rgba(57,211,83,.22);}
+  .pbtn.jacob small{color:var(--green);}
+  .pbtn:active{transform:translateY(2px);}
+  .playingas{text-align:center; color:var(--dim); font-weight:800; font-size:14px; margin:2px 0 12px;}
+  .playingas b{color:var(--green);}
+  .playingas a{color:var(--gold); cursor:pointer; text-decoration:underline; margin-left:8px; font-size:13px;}
+
   .hidden{display:none !important;}
 </style>
 
