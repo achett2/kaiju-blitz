@@ -451,7 +451,7 @@ function tap(d){
   } else if(ansStr.startsWith(test)){
     entry=test; $("entry").textContent=entry;
   } else {
-    attempts++; combo=0; updateHud();
+    attempts++; curWrong++; combo=0; updateHud();
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     return;
