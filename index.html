@@ -574,8 +574,8 @@ function start(){
   clearInterval(timer);
   const startTs=Date.now(); lastAnswerTs=performance.now();
   timer=setInterval(()=>{
-    timeLeft=Math.max(0, duration-(Date.now()-startTs)/1000);
-    $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/duration)+"%";
+    timeLeft=Math.max(0, duration+timeBonus-(Date.now()-startTs)/1000);
+    $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/(duration+timeBonus))+"%";
     if(phase==="boss"){
       const since=(performance.now()-lastAnswerTs)/1000, frac=Math.min(1,since/ATTACK_INTERVAL);
       const cf=$("bosscharge-fill"); if(cf) cf.style.width=(frac*100)+"%";
