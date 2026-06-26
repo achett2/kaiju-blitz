@@ -733,6 +733,7 @@ $("open-store").onclick=openStore;
 $("open-store-2").onclick=openStore;
 $("store-back").onclick=closeStore;
 updateCoinUI();
+Coins.refresh();   /* pull authoritative balance/owned/hero from the Sheet */
 /* =========================================================== */
 
 $("go").onclick=start;
