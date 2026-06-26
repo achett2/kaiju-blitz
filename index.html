@@ -500,8 +500,9 @@ function computeDamage(sec,c){ return Math.max(4, Math.round(10*paceMult(sec)*co
 
 function spawnBoss(){
   phase="boss"; bossSpawnCount++;
-  const idx=(bossSpawnCount-1)%BOSS_NAMES.length;
-  boss={ idx, max:90+(bossSpawnCount-1)*40 }; boss.hp=boss.max;
+  const roster=ROSTERS[op]||ROSTERS.add;
+  const name=roster[(bossSpawnCount-1)%roster.length];
+  boss={ name, max:90+(bossSpawnCount-1)*40 }; boss.hp=boss.max;
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
     + `<div class="bosscharge"><div id="bosscharge-fill"></div></div>`
