@@ -582,6 +582,7 @@ function logResult(acc, pace){
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${correct}/${attempts}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
     kaiju: bossesDefeated, bestStreak: bestCombo, qlog: qlog,
+    coins: (lastAward?lastAward.total:0), coinBalance: Coins.balance(),
     num:"", mult:"", word:"", read:""
   };
   note.textContent="Saving result…";
