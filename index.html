@@ -686,7 +686,7 @@ function showCoinAward(res){
   if(!res || !res.total){ ca.classList.add("hidden"); return; }
   $("ca-total").textContent = res.total;
   $("ca-parts").innerHTML = res.parts.map(p=>`<span>${p.label} +${p.n}</span>`).join("");
-  $("ca-bal").textContent = res.balance;
+  $("ca-bal").textContent = Coins.balance();
   ca.classList.remove("hidden");
 }
 
