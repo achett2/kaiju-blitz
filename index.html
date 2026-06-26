@@ -360,11 +360,15 @@ function heroSVGAtomic(){return `
 function monImg(src, fb){ return '<img src="'+src+'?v=1" class="mon" alt=""'+(fb?' onerror="this.onerror=null;this.src=\''+fb+'?v=1\'"':'')+'>'; }
 function getHeroSVG(){ return Coins.hero()==="atomic" ? monImg("kaiju-atomic.png") : monImg("kaiju-classic.png"); }
 
-const BOSS_NAMES = ["Crimson Brute","Anguirus","Violet Shrieker","Iron Maw","Trideous"];
-function bossSVG(idx){
-  const name = BOSS_NAMES[idx];
+const ROSTERS = {
+  add: ["Crimson Brute","Iron Maw"],
+  sub: ["Anguirus","Violet Shrieker"],
+  mix: ["Champion","Trideous"]
+};
+function bossArt(name){
   if(name==="Crimson Brute") return monImg("boss-crimson.png");
   if(name==="Anguirus") return monImg("kaiju-anguirus.png");
+  if(name==="Champion") return monImg("champion.png","kaiju-anguirus.png");
   if(false) return `
    <svg viewBox="0 0 110 120" class="mon">
     <path d="M92 96 Q118 88 103 68 Q97 81 81 83 Z" fill="#c92a2a"/>
