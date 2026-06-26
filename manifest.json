@@ -1,0 +1,13 @@
+{
+  "name": "Kaiju Blitz",
+  "short_name": "Kaiju Blitz",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1a16",
+  "theme_color": "#0e1a16",
+  "start_url": "./index.html",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
