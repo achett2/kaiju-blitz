@@ -591,7 +591,138 @@ function logResult(acc, pace){
     .catch(()=>note.textContent="Couldn't send — open this file in Safari/Chrome (not the preview) to save.");
 }
 
+/* ====================== RADIATION COINS ====================== */
+let lastAward = null;
+
+const Coins = {
+  ls(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  balance(){ return this.ls("kb_coins", 0); },
+  addBalance(n){ const b=this.balance()+n; this.set("kb_coins", Math.max(0,b)); return this.balance(); },
+  owned(){ return this.ls("kb_owned", []); },
+  isOwned(id){ return id==="classic" || this.owned().indexOf(id)>=0; },
+  buy(id, price){ if(this.isOwned(id) || this.balance()<price) return false; this.addBalance(-price); const o=this.owned(); o.push(id); this.set("kb_owned", o); this.setHero(id); return true; },
+  hero(){ return this.ls("kb_hero", "classic"); },
+  setHero(id){ this.set("kb_hero", id); },
+  bests(){ return this.ls("kb_bests", {}); },
+  todayStr(){ return new Date().toLocaleDateString("en-US", { timeZone:"America/Chicago" }); }
+};
+
+const STORE = [
+  { id:"classic", name:"Classic Godzilla", desc:"The original green rampager", price:0, emoji:"🦖" },
+  { id:"atomic",  name:"Atomic Godzilla",  desc:"Charcoal titan with glowing atomic spines", price:150, emoji:"🦖⚛️" }
+];
+
+/* earn coins for a Jacob session: base×difficulty + accuracy + speed + record + consistency */
+function awardCoins(){
+  const solved = qlog.length;
+  if(solved < 1) return { total:0, parts:[], balance:Coins.balance() };
+  const today = Coins.todayStr();
+  const st = Coins.ls("kb_sesstoday", {d:"",c:0});
+  if(st.d!==today){ st.d=today; st.c=0; }
+  st.c++; Coins.set("kb_sesstoday", st);
+  const bonusOK = solved>=10 && st.c<=4;   // bonuses only first 4 real sessions/day
+
+  const parts=[];
+  const opMult = (op==="mul"||op==="div")?1.6 : (op==="mix"?1.2:1.0);
+  const rangeMult = range>=20 ? 1.4 : 1.0;
+  const base = Math.round(Math.min(solved,25)*opMult*rangeMult);
+  parts.push({label:"Blocks smashed", n:base});
+
+  const ft = qlog.filter(x=>x.wrong===0).length;
+  const ftPct = Math.round(100*ft/solved);
+  let acc=0;
+  if(bonusOK){ if(ftPct>=90)acc=20; else if(ftPct>=80)acc=10; else if(ftPct>=70)acc=5; }
+  if(acc) parts.push({label:"Accuracy "+ftPct+"%", n:acc});
+
+  const secsArr = (solved>1 ? qlog.slice(1) : qlog).map(x=>(+x.sec)||0);  // drop slow first question
+  const avgSec = secsArr.reduce((a,b)=>a+b,0)/Math.max(1,secsArr.length);
+  let spd=0;
+  if(bonusOK){ if(avgSec<2.5)spd=15; else if(avgSec<4)spd=8; else if(avgSec<6)spd=3; }
+  const lightning = qlog.filter(x=>x.wrong===0 && (+x.sec)<1.5).length;
+  if(bonusOK) spd += lightning;
+  if(spd) parts.push({label:"Speed "+avgSec.toFixed(1)+"s"+(lightning?" · "+lightning+"⚡":""), n:spd});
+
+  const modeKey = op+"_"+range;
+  const bests = Coins.bests();
+  const mb = bests[modeKey] || {smashed:0, ftPct:0, avgSec:999};
+  let rec=0;
+  if(bonusOK && smashed>mb.smashed) rec=15;
+  bests[modeKey] = { smashed:Math.max(mb.smashed,smashed), ftPct:Math.max(mb.ftPct,ftPct), avgSec:Math.min(mb.avgSec,avgSec) };
+  Coins.set("kb_bests", bests);
+  if(rec) parts.push({label:"New record! 🏆", n:rec});
+
+  let cons=0;
+  const days = Coins.ls("kb_days", {last:"", week:[]});
+  if(bonusOK && days.last!==today){
+    cons+=10; parts.push({label:"Daily play ☀️", n:10});
+    let wk = (days.week||[]).filter(d => (Date.now()-new Date(d).getTime()) < 7*86400000);
+    if(wk.indexOf(today)<0) wk.push(today);
+    days.week=wk; days.last=today;
+    if(wk.length===4){ cons+=50; parts.push({label:"4-day week! ☢️", n:50}); }
+    Coins.set("kb_days", days);
+  }
+
+  const total = base+acc+spd+rec+cons;
+  const balance = Coins.addBalance(total);
+  return { total, parts, balance };
+}
+
+function showCoinAward(res){
+  const ca=$("coinaward");
+  if(!res || !res.total){ ca.classList.add("hidden"); return; }
+  $("ca-total").textContent = res.total;
+  $("ca-parts").innerHTML = res.parts.map(p=>`<span>${p.label} +${p.n}</span>`).join("");
+  $("ca-bal").textContent = res.balance;
+  ca.classList.remove("hidden");
+}
+
+function updateCoinUI(){
+  const b=Coins.balance();
+  const e1=$("coin-bal"); if(e1) e1.textContent=b;
+  const e2=$("store-bal"); if(e2) e2.textContent=b;
+}
+
+function renderStore(){
+  $("store-bal").textContent = Coins.balance();
+  $("store-items").innerHTML = STORE.map(it=>{
+    const owned=Coins.isOwned(it.id), equipped=Coins.hero()===it.id, afford=Coins.balance()>=it.price;
+    let act;
+    if(equipped) act = `<span class="tag eq">✓ Equipped</span>`;
+    else if(owned) act = `<button class="buy" data-eq="${it.id}">Equip</button>`;
+    else act = `<button class="buy ${afford?"":"dis"}" ${afford?`data-buy="${it.id}" data-price="${it.price}"`:""}>Buy · ☢️${it.price}</button>`;
+    return `<div class="store-item"><div class="si-art">${it.emoji}</div>`+
+           `<div class="si-info"><b>${it.name}</b><span>${it.desc}</span></div>`+
+           `<div class="si-act">${act}</div></div>`;
+  }).join("");
+  $("store-items").querySelectorAll("[data-buy]").forEach(b=> b.onclick=()=>{
+    if(Coins.buy(b.getAttribute("data-buy"), +b.getAttribute("data-price"))){ renderStore(); updateCoinUI(); }
+  });
+  $("store-items").querySelectorAll("[data-eq]").forEach(b=> b.onclick=()=>{ Coins.setHero(b.getAttribute("data-eq")); renderStore(); });
+}
+
+function openStore(){
+  ["who","start","end"].forEach(id=>$(id).classList.add("hidden"));
+  $("best-banner").style.display="none";
+  $("coinchip").classList.remove("hidden");
+  $("store").classList.remove("hidden");
+  renderStore();
+}
+function closeStore(){
+  $("store").classList.add("hidden");
+  $("best-banner").style.display="";
+  $("coinchip").classList.remove("hidden");
+  $("start").classList.remove("hidden");
+  renderBestBanner();
+}
+
+$("open-store").onclick=openStore;
+$("open-store-2").onclick=openStore;
+$("store-back").onclick=closeStore;
+updateCoinUI();
+/* =========================================================== */
+
 $("go").onclick=start;
-$("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); renderBestBanner(); };
+$("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); renderBestBanner(); };
 loadBest();
 </script>
