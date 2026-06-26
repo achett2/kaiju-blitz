@@ -737,6 +737,6 @@ Coins.refresh();   /* pull authoritative balance/owned/hero from the Sheet */
 /* =========================================================== */
 
 $("go").onclick=start;
-$("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); renderBestBanner(); };
+$("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 </script>
