@@ -678,8 +678,7 @@ function awardCoins(){
   }
 
   const total = base+acc+spd+rec+cons;
-  const balance = Coins.addBalance(total);
-  return { total, parts, balance };
+  return { total, parts };
 }
 
 function showCoinAward(res){
