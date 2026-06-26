@@ -234,8 +234,22 @@
       <div class="tile"><b id="e-acc">0%</b><span>ACCURACY</span></div>
       <div class="tile"><b id="e-pace">–</b><span>SECONDS / SMASH</span></div>
     </div>
+    <div class="coinaward hidden" id="coinaward">
+      <div class="ca-total">+<span id="ca-total">0</span> ☢️ Radiation Coins</div>
+      <div class="ca-parts" id="ca-parts"></div>
+      <div class="ca-bal">Balance: ☢️ <span id="ca-bal">0</span></div>
+    </div>
     <p class="save-note" id="save-note"></p>
     <button class="start-btn" id="again" style="max-width:300px;margin:0 auto;display:block;">GO AGAIN 🔥</button>
+    <button class="storebtn" id="open-store-2" style="max-width:300px;margin:8px auto 0;display:block;">🛒 Radiation Store</button>
+  </div>
+
+  <!-- STORE -->
+  <div id="store" class="hidden">
+    <h2 style="font-family:'Baloo 2';text-align:center;color:var(--gold);margin:16px 0 2px;">☢️ Radiation Store</h2>
+    <p class="playingas">Balance: ☢️ <b id="store-bal" style="color:var(--gold)">0</b></p>
+    <div id="store-items" style="margin-top:6px;"></div>
+    <button class="start-btn" id="store-back" style="max-width:300px;margin:10px auto 0;display:block;">← Back</button>
   </div>
 </div>
 
