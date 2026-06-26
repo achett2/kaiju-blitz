@@ -357,7 +357,7 @@ function heroSVGAtomic(){return `
   <circle cx="86" cy="41" r="4.5" fill="#ffe066"/><circle cx="86" cy="41" r="1.8" fill="#1a1a1a"/>
 </svg>`;}
 
-function monImg(src, fb){ return '<img src="'+src+'?v=1" class="mon" alt=""'+(fb?' onerror="this.onerror=null;this.src=\''+fb+'?v=1\'"':'')+'>'; }
+function monImg(src, fb){ return '<img src="'+src+'?v=2" class="mon" alt=""'+(fb?' onerror="this.onerror=null;this.src=\''+fb+'?v=2\'"':'')+'>'; }
 function getHeroSVG(){ return Coins.hero()==="atomic" ? monImg("kaiju-atomic.png") : monImg("kaiju-classic.png"); }
 
 const ROSTERS = {
