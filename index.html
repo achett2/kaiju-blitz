@@ -562,7 +562,7 @@ function endGame(){
   $("newbest").classList.toggle("hidden", !isRecord);
   if(isRecord) kaijuBest={smashed, secsPerCorrect:pace};
   $("coinchip").classList.remove("hidden");
-  if(player==="jacob"){ lastAward = awardCoins(); showCoinAward(lastAward); }
+  if(player==="jacob"){ lastAward = awardCoins(); Coins.addEarned(lastAward.total); showCoinAward(lastAward); }
   else { lastAward=null; $("coinaward").classList.add("hidden"); }
   updateCoinUI();
   logResult(acc, pace);
