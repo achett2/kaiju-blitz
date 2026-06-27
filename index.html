@@ -549,7 +549,7 @@ function spawnBoss(){
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
     + `<div class="bosscharge"><div id="bosscharge-fill"></div></div>`
-    + `<div class="bosslabel">KAIJU #${bossSpawnCount} · ${name}</div>`
+    + `<div class="bosslabel">${name}</div>`
     + bossArt(name);
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
   lastAnswerTs=performance.now();
