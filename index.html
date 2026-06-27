@@ -698,6 +698,12 @@ const Coins = {
   owned(){ return this._s.owned; },
   isOwned(id){ return id==="classic" || this._s.owned.indexOf(id)>=0; },
   hero(){ return this._s.hero; },
+  mastery(op){ return (this._s.mastery && this._s.mastery[op]) || 0; },
+  masteryComplete(){ const m=this._s.mastery||{}; return (m.add>=MASTERY_NEEDED)&&(m.sub>=MASTERY_NEEDED)&&(m.mix>=MASTERY_NEEDED); },
+  addMastery(op){ if(!this._s.mastery) this._s.mastery={add:0,sub:0,mix:0};
+    if((this._s.mastery[op]||0)>=MASTERY_NEEDED) return false;
+    this._s.mastery[op]=(this._s.mastery[op]||0)+1; this.saveCache();
+    this._post({action:"mastery", student:CONFIG.student, op:op}); return true; },
   _post(o){ try{ fetch(CONFIG.webAppUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(o)}); }catch(e){} },
   setHero(id){ this._s.hero=id; this.saveCache(); this._post({action:"equip", student:CONFIG.student, item:id}); },
   buy(id, price){ if(this.isOwned(id) || this._s.coins<price) return false; this._s.coins-=price; this._s.owned.push(id); this._s.hero=id; this.saveCache(); this._post({action:"buy", student:CONFIG.student, item:id, price:price}); return true; },
