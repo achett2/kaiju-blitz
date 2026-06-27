@@ -568,7 +568,7 @@ function setAtomic(on){
   if(on===atomicMode) return;
   atomicMode = on;
   const h=$("hero");
-  if(on){ h.innerHTML=monImg("kaiju-atomic.png"); h.classList.add("charged"); timeBonus+=10; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("⚡ ATOMIC! +10 SECONDS"); }
+  if(on){ h.innerHTML=chargedHeroSVG(); h.classList.add("charged"); timeBonus+=10; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("⚡ CHARGED UP! +10 SECONDS"); }
   else { h.innerHTML=getHeroSVG(); h.classList.remove("charged"); }
 }
 function hitRival(){ const r=$("rival"); r.classList.add("hit"); setTimeout(()=>r.classList.remove("hit"),180); }
