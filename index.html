@@ -351,7 +351,7 @@ function seg(id, set){
       b.classList.add("on"); set(b.getAttribute("data-v")); };
   });
 }
-seg("op", v=>op=v); seg("range", v=>range=+v); seg("time", v=>duration=+v);
+seg("op", v=>{ op=v; $("range-group").classList.toggle("hidden", v==="round"); }); seg("range", v=>range=+v); seg("time", v=>duration=+v);
 
 /* ---- who's playing: dedicated first screen ---- */
 function pickPlayer(v){
