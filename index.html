@@ -844,9 +844,28 @@ function closeStore(){
   renderBestBanner();
 }
 
+function renderBadges(){
+  const ops=[["add","Add ＋"],["sub","Subtract −"],["mix","Mixed ±"]];
+  $("badge-tracks").innerHTML = ops.map(function(o){
+    const op=o[0], label=o[1], n=Coins.mastery(op), done=n>=MASTERY_NEEDED;
+    let pips=""; for(let i=0;i<MASTERY_NEEDED;i++) pips+=`<span class="pip ${i<n?"on":""}">★</span>`;
+    return `<div class="badge-track ${done?"done":""}"><div class="bt-top"><b>${label}</b><span>${n}/${MASTERY_NEEDED}${done?" ✓":""}</span></div><div class="bt-pips">${pips}</div></div>`;
+  }).join("") + `<p class="bt-rule">Mastery round = 100% first-try · under ${MASTERY_SEC}s each · ${MASTERY_MIN_Q}+ questions</p>`;
+}
+function openBadges(){ ["who","start","end","store"].forEach(id=>$(id).classList.add("hidden")); $("best-banner").style.display="none"; $("coinchip").classList.remove("hidden"); $("badges").classList.remove("hidden"); renderBadges(); }
+function closeBadges(){ $("badges").classList.add("hidden"); $("best-banner").style.display=""; $("coinchip").classList.remove("hidden"); $("start").classList.remove("hidden"); renderBestBanner(); }
+function showMasteryEarned(op){
+  const el=$("mastery-note"); if(!el) return;
+  if(!op){ el.classList.add("hidden"); return; }
+  const labels={add:"Addition",sub:"Subtraction",mix:"Mixed"};
+  el.innerHTML = `🏅 ${labels[op]} mastery ${Coins.mastery(op)}/${MASTERY_NEEDED}!` + (Coins.masteryComplete()?" — ☀️ SUPERMAN UNLOCKED!":"");
+  el.classList.remove("hidden");
+}
 $("open-store").onclick=openStore;
 $("open-store-2").onclick=openStore;
 $("store-back").onclick=closeStore;
+$("open-badges").onclick=openBadges;
+$("badges-back").onclick=closeBadges;
 updateCoinUI();
 Coins.refresh();   /* pull authoritative balance/owned/hero from the Sheet */
 /* =========================================================== */
