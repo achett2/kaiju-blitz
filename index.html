@@ -657,6 +657,8 @@ function endGame(){
   $("coinchip").classList.remove("hidden");
   if(player==="jacob"){ lastAward = awardCoins(); Coins.addEarned(lastAward.total); showCoinAward(lastAward); }
   else { lastAward=null; $("coinaward").classList.add("hidden"); }
+  const gotMastery = (player==="jacob" && solvedQ>=MASTERY_MIN_Q && firstTryQ===solvedQ && pace!=null && pace<MASTERY_SEC && Coins.addMastery(op));
+  showMasteryEarned(gotMastery ? op : null);
   updateCoinUI();
   logResult(acc, pace);
 }
