@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Kaiju Blitz" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Barlow+Condensed:wght@600;700;800&family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
     --green:#39d353; --green-dk:#1f7a36; --fire:#ff7a18; --ink:#eafff0;
@@ -152,6 +152,46 @@
   .ca-parts{font-size:12.5px; color:var(--dim); margin:4px 0; line-height:1.7;}
   .ca-parts span{display:inline-block; margin:0 5px; white-space:nowrap;}
   .ca-bal{font-weight:800; color:var(--gold); font-size:15px;}
+
+  /* ===================== ACTION-COMIC SKIN ===================== */
+  :root{ --ink:#08090a; --red:#ff2b3d; }
+  body{ background:#0b0e0a; }
+  .wrap{ background:
+    radial-gradient(circle, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/9px 9px,
+    radial-gradient(120% 80% at 50% 0, #1a2a18 0, #0b0e0a 70%); }
+  h1{ font-family:'Bangers',cursive; font-size:34px; letter-spacing:2px; transform:rotate(-2deg);
+      text-shadow:3px 3px 0 var(--red), -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 2px 2px 0 var(--ink); }
+  .sub,.lbl,.playingas,.save-note{ font-family:'Barlow Condensed',sans-serif; font-weight:800; letter-spacing:2px; text-transform:uppercase; }
+  .best,.newbest{ font-family:'Bangers',cursive; letter-spacing:1px; text-shadow:2px 2px 0 var(--ink); }
+  .seg button{ font-family:'Anton',sans-serif; border:3px solid var(--ink); border-radius:0; background:#161c14;
+      filter:drop-shadow(3px 3px 0 var(--ink)); clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px); }
+  .seg button.on{ background:var(--green); color:#06210c; }
+  .start-btn{ font-family:'Bangers',cursive; letter-spacing:1.5px; border:4px solid var(--ink); border-radius:0; color:#1a1405;
+      background:var(--gold); box-shadow:none; filter:drop-shadow(6px 6px 0 var(--ink));
+      clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); }
+  .start-btn:active{ transform:translate(3px,3px); filter:drop-shadow(2px 2px 0 var(--ink)); }
+  .pad button{ font-family:'Anton',sans-serif; border:3px solid var(--ink); border-radius:0; background:#161c14;
+      filter:drop-shadow(3px 3px 0 var(--ink)); clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+  .pad button:active{ transform:translate(2px,2px); filter:drop-shadow(1px 1px 0 var(--ink)); background:var(--green); color:#06210c; }
+  .pbtn{ font-family:'Anton',sans-serif; border:3px solid var(--ink); border-radius:0; background:#10160f;
+      filter:drop-shadow(5px 5px 0 var(--ink)); clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); }
+  .pbtn small{ font-family:'Barlow Condensed',sans-serif; font-weight:800; letter-spacing:1px; }
+  .storebtn{ font-family:'Bangers',cursive; letter-spacing:1px; border:3px solid var(--gold); border-radius:0; box-shadow:4px 4px 0 var(--ink); }
+  .storebtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  .stat{ font-family:'Anton',sans-serif; }
+  .stat small{ font-family:'Barlow Condensed',sans-serif; font-weight:800; letter-spacing:1px; }
+  .timebar{ border:3px solid var(--ink); border-radius:0; height:14px; }
+  .scene{ border:4px solid var(--ink); box-shadow:4px 4px 0 var(--ink); }
+  .fact,.entry{ font-family:'Anton',sans-serif; letter-spacing:1px; text-shadow:2px 2px 0 var(--ink); }
+  .tile{ border:3px solid var(--ink); border-radius:0; box-shadow:3px 3px 0 var(--ink); background:#10160f; }
+  .tile b{ font-family:'Anton',sans-serif; }
+  .store-item{ border:3px solid var(--ink); border-radius:0; box-shadow:3px 3px 0 var(--ink); }
+  .si-info b{ font-family:'Anton',sans-serif; }
+  .si-act .buy{ font-family:'Bangers',cursive; letter-spacing:.5px; border-radius:0; border:3px solid var(--ink); box-shadow:2px 2px 0 var(--ink); }
+  .coinchip{ font-family:'Anton',sans-serif; border:3px solid var(--ink); border-radius:0; box-shadow:2px 2px 0 var(--ink); }
+  .who h2,.end h2{ font-family:'Bangers',cursive; letter-spacing:2px; text-shadow:3px 3px 0 var(--ink); }
+  .banner{ font-family:'Bangers',cursive; letter-spacing:2px; text-shadow:2px 2px 0 var(--ink); }
+  .ca-total{ font-family:'Anton',sans-serif; }
 
   .hidden{display:none !important;}
 </style>
@@ -595,7 +635,8 @@ function start(){
 
 function endGame(){
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
-  const acc = attempts? Math.round(100*correct/attempts):0;
+  const solvedQ = qlog.length, firstTryQ = qlog.filter(x=>x.wrong===0).length;
+  const acc = solvedQ ? Math.round(100*firstTryQ/solvedQ) : 0;
   const pace = correct ? Math.round((totalSolveMs/1000/correct)*10)/10 : null;
   $("e-correct").textContent=smashed; $("e-points").textContent=score;
   $("e-acc").textContent=acc+"%"; $("e-pace").textContent = pace!=null?pace:"–";
@@ -622,7 +663,7 @@ function logResult(acc, pace){
     mode:`${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
-    addsub:`${correct}/${attempts}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
+    addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
     kaiju: bossesDefeated, bestStreak: bestCombo, qlog: qlog,
     coins: (lastAward?lastAward.total:0), coinBalance: Coins.balance(),
     num:"", mult:"", word:"", read:""
