@@ -530,7 +530,15 @@ function loadBest(){
 }
 
 /* ---- facts ---- */
+function nextRound(){
+  const r=Math.random();
+  if(r<0.30){ let n=randInt(11,98); if(n%10===0) n+=randInt(1,9); return {text:`Round ${n} to 10`, ans:10*Math.round(n/10), kind:"round"}; }
+  if(r<0.55){ const n=randInt(108,989); return {text:`Round ${n} to 100`, ans:100*Math.round(n/100), kind:"round"}; }
+  if(r<0.78){ const a=randInt(11,89), b=randInt(11,89); return {text:`Estimate ${a} + ${b}`, ans:10*Math.round(a/10)+10*Math.round(b/10), kind:"round"}; }
+  const a=randInt(31,98), b=randInt(11,a-1); return {text:`Estimate ${a} − ${b}`, ans:10*Math.round(a/10)-10*Math.round(b/10), kind:"round"};
+}
 function nextFact(){
+  if(op==="round") return nextRound();
   let kind = op==="mix" ? (Math.random()<0.5?"add":"sub") : op;
   if(kind==="add"){ const a=randInt(1,range-1), b=randInt(1,range-a); return {text:`${a} + ${b}`, ans:a+b, kind}; }
   const m=randInt(2,range), s=randInt(1,m-1); return {text:`${m} − ${s}`, ans:m-s, kind};
