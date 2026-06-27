@@ -812,12 +812,15 @@ function renderStore(){
   $("store-bal").textContent = Coins.balance();
   $("store-items").innerHTML = STORE.map(it=>{
     const owned=Coins.isOwned(it.id), equipped=Coins.hero()===it.id, afford=Coins.balance()>=it.price;
-    let act;
+    const lockedSuper = it.id==="superman" && !Coins.masteryComplete();
+    let act, sub=it.desc;
     if(equipped) act = `<span class="tag eq">✓ Equipped</span>`;
     else if(owned) act = `<button class="buy" data-eq="${it.id}">Equip</button>`;
+    else if(lockedSuper){ act = `<span class="tag" style="color:var(--dim);font-weight:800;font-size:12px;">🔒 Locked</span>`;
+      sub = `🔒 Master every operation first — Add ${Coins.mastery("add")}/${MASTERY_NEEDED} · Sub ${Coins.mastery("sub")}/${MASTERY_NEEDED} · Mix ${Coins.mastery("mix")}/${MASTERY_NEEDED}`; }
     else act = `<button class="buy ${afford?"":"dis"}" ${afford?`data-buy="${it.id}" data-price="${it.price}"`:""}>Buy · ☢️${it.price}</button>`;
     return `<div class="store-item"><div class="si-art">${it.emoji}</div>`+
-           `<div class="si-info"><b>${it.name}</b><span>${it.desc}</span></div>`+
+           `<div class="si-info"><b>${it.name}</b><span>${sub}</span></div>`+
            `<div class="si-act">${act}</div></div>`;
   }).join("");
   $("store-items").querySelectorAll("[data-buy]").forEach(b=> b.onclick=()=>{
