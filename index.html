@@ -569,7 +569,7 @@ function banner(t){ const b=$("banner"); b.textContent=t; b.classList.remove("on
 
 function showFact(){
   cur=nextFact(); entry=""; curWrong=0;
-  $("fact").textContent=cur.text+" ="; $("entry").innerHTML="&nbsp;"; $("entry").classList.remove("bad");
+  $("fact").textContent=cur.text+" ="; $("fact").classList.toggle("sm", cur.text.length>9); $("entry").innerHTML="&nbsp;"; $("entry").classList.remove("bad");
   factShownAt=performance.now();
 }
 
