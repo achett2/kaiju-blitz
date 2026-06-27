@@ -553,7 +553,7 @@ function spawnBoss(){
     + bossArt(name);
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
   lastAnswerTs=performance.now();
-  banner("KAIJU #"+bossSpawnCount+" APPROACHES!");
+  banner(name+" APPROACHES!");
 }
 function updateBossHp(){ const f=$("bosshp-fill"); if(f) f.style.width=Math.max(0,100*boss.hp/boss.max)+"%"; }
 function fireBeam(){ const b=$("beam"); b.classList.toggle("atomic", atomicMode); b.classList.remove("on"); void b.offsetWidth; b.classList.add("on"); setTimeout(()=>b.classList.remove("on"),170); }
