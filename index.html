@@ -402,6 +402,10 @@ function getHeroSVG(){ const h=Coins.hero();
   if(h==="atomic") return monImg("kaiju-atomic.png");
   if(h==="superman") return monImg("kaiju-superman.png","kaiju-classic.png");
   return monImg("kaiju-classic.png"); }
+function chargedHeroSVG(){
+  if(Coins.hero()==="superman") return monImg("kaiju-superman-charged.png","kaiju-superman.png");
+  return monImg("kaiju-atomic.png");   /* classic & atomic both power up to the atomic form */
+}
 
 const ROSTERS = {
   add: ["Crimson Brute","Iron Maw"],
