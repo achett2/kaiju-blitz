@@ -689,7 +689,7 @@ let lastAward = null;
 
 /* Server-backed: balance/owned/hero live in the Sheet (Players tab); localStorage is just an offline cache. */
 const Coins = {
-  _s: { coins:0, owned:[], hero:"classic" },
+  _s: { coins:0, owned:[], hero:"classic", mastery:{add:0,sub:0,mix:0} },
   ls(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   loadCache(){ const c=this.ls("kb_state",null); if(c){ this._s.coins=+c.coins||0; this._s.owned=c.owned||[]; this._s.hero=c.hero||"classic"; } },
