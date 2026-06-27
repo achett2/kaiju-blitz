@@ -692,7 +692,7 @@ const Coins = {
   _s: { coins:0, owned:[], hero:"classic", mastery:{add:0,sub:0,mix:0} },
   ls(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
-  loadCache(){ const c=this.ls("kb_state",null); if(c){ this._s.coins=+c.coins||0; this._s.owned=c.owned||[]; this._s.hero=c.hero||"classic"; } },
+  loadCache(){ const c=this.ls("kb_state",null); if(c){ this._s.coins=+c.coins||0; this._s.owned=c.owned||[]; this._s.hero=c.hero||"classic"; if(c.mastery) this._s.mastery=Object.assign({add:0,sub:0,mix:0}, c.mastery); } },
   saveCache(){ this.set("kb_state", this._s); },
   balance(){ return this._s.coins; },
   owned(){ return this._s.owned; },
