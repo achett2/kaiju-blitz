@@ -769,7 +769,7 @@ function awardCoins(){
   const bonusOK = solved>=10 && st.c<=4;   // bonuses only first 4 real sessions/day
 
   const parts=[];
-  const opMult = (op==="mul"||op==="div")?1.6 : (op==="mix"?1.2:1.0);
+  const opMult = op==="round"?1.4 : (op==="mul"||op==="div")?1.6 : (op==="mix"?1.2:1.0);
   const rangeMult = range>=20 ? 1.4 : 1.0;
   const base = Math.round(Math.min(solved,25)*opMult*rangeMult);
   parts.push({label:"Blocks smashed", n:base});
