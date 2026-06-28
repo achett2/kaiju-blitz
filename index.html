@@ -661,7 +661,7 @@ function tap(d){
     const hero=$("hero"); hero.classList.add("stomp"); setTimeout(()=>hero.classList.remove("stomp"),140);
     if(phase==="city"){
       smashNext(); cityProgress++;
-      if(cityProgress>=NB) spawnBoss();
+      if(cityProgress>=NB) cityCleared();
     } else {
       let dmg=computeDamage(dt/1000, combo);
       boss.hp-=dmg; fireBeam(); hitRival(); showDamage(dmg); lastAnswerTs=performance.now();
