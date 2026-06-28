@@ -603,7 +603,7 @@ function setAtomic(on){
   atomicMode = on;
   const h=$("hero");
   if(on){ h.innerHTML=chargedHeroSVG(); h.classList.add("charged"); timeBonus+=10; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("⚡ CHARGED UP! +10 SECONDS"); }
-  else { h.innerHTML=getHeroSVG(); h.classList.remove("charged"); }
+  else { h.innerHTML=getHeroSVG(); h.classList.remove("charged","turbo"); turboMode=false; }
 }
 function hitRival(){ const r=$("rival"); r.classList.add("hit"); setTimeout(()=>r.classList.remove("hit"),180); }
 function showDamage(d){
