@@ -610,11 +610,23 @@ function paceMult(sec){ return sec<=1.5?2.0 : sec<=3?1.5 : sec<=5?1.0 : 0.6; }
 function comboMult(c){ return 1 + Math.min(c,10)*0.1; }   // up to 2x
 function computeDamage(sec,c){ return Math.max(4, Math.round(10*paceMult(sec)*comboMult(c))); }
 
+function cityCleared(){
+  const roster=ROSTERS[op]||ROSTERS.add;
+  const upcoming=roster[bossSpawnCount % roster.length];
+  if(upcoming==="Captain Underpants" && !captainWarmup){
+    captainWarmup=true; cityProgress=0; buildSkyline();
+    banner("It seems our villain is running late!");
+  } else {
+    spawnBoss();
+  }
+}
 function spawnBoss(){
   phase="boss"; bossSpawnCount++;
   const roster=ROSTERS[op]||ROSTERS.add;
   const name=roster[(bossSpawnCount-1)%roster.length];
-  boss={ name, max:90+(bossSpawnCount-1)*40 }; boss.hp=boss.max;
+  const isCaptain = name==="Captain Underpants";
+  boss={ name, max: isCaptain ? 1 : 90+(bossSpawnCount-1)*40 }; boss.hp=boss.max;
+  if(isCaptain) forcedNext={text:"1 + 1", ans:2, kind:"add"};
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
     + `<div class="bosscharge"><div id="bosscharge-fill"></div></div>`
@@ -622,7 +634,7 @@ function spawnBoss(){
     + bossArt(name);
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
   lastAnswerTs=performance.now();
-  banner(name+" APPROACHES!");
+  banner(isCaptain ? "Captain Underpants: Tra La Laaaa!" : name+" APPROACHES!");
 }
 function updateBossHp(){ const f=$("bosshp-fill"); if(f) f.style.width=Math.max(0,100*boss.hp/boss.max)+"%"; }
 function fireBeam(){ const b=$("beam"); b.classList.toggle("atomic", atomicMode); b.classList.remove("on"); void b.offsetWidth; b.classList.add("on"); setTimeout(()=>b.classList.remove("on"),170); }
