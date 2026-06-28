@@ -708,7 +708,7 @@ function logResult(acc, pace){
   const note=$("save-note");
   if(player==="test"){ note.textContent="🧪 Test run — not saved."; return; }
   if(!CONFIG.logResults){ note.textContent="Saving turned off."; return; }
-  const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":"mixed";
+  const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":op==="mul"?"mult":op==="div"?"division":"mixed";
   const payload={
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
