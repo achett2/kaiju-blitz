@@ -654,7 +654,7 @@ $("pad").querySelectorAll("button").forEach(b=> b.onclick=()=>tap(b.textContent)
 document.addEventListener("keydown", e=>{ if(!$("game").classList.contains("hidden") && /^[0-9]$/.test(e.key)) tap(e.key); });
 
 function start(){
-  score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0;
+  score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
   phase="city"; cityProgress=0; boss=null; bossSpawnCount=0; bossesDefeated=0;
   qlog=[]; curWrong=0; sessionId="KB-"+Date.now().toString(36);
   updateHud(); $("time-left").textContent=duration; $("time-fill").style.width="100%";
