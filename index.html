@@ -614,8 +614,8 @@ function cityCleared(){
   const roster=ROSTERS[op]||ROSTERS.add;
   const upcoming=roster[bossSpawnCount % roster.length];
   if(upcoming==="Captain Underpants" && !captainWarmup){
-    captainWarmup=true; cityProgress=0; buildSkyline();
-    banner("It seems our villain is running late!");
+    captainWarmup=true; cityProgress=0; buildSkyline(); timeBonus+=20;
+    banner("Our villain is running late… +20 SECONDS! ⏱️");
   } else {
     spawnBoss();
   }
