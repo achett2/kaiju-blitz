@@ -653,8 +653,10 @@ function showDamage(d){
 }
 function roar(){ const r=$("rival"); r.classList.add("roar"); setTimeout(()=>r.classList.remove("roar"),300); banner("ROAR! Streak broken"); }
 function defeatBoss(){
+  const wasCaptain = boss && boss.name==="Captain Underpants";
   bossesDefeated++; score += 50 + bossesDefeated*10; updateHud();
-  banner("KAIJU DOWN! 💥");
+  banner(wasCaptain ? "💥 CAPTAIN UNDERPANTS OBLITERATED!" : "KAIJU DOWN! 💥");
+  if(wasCaptain) captainWarmup=false;
   const r=$("rival"); r.innerHTML='<div style="font-size:60px;text-align:center;">💥</div>';
   setTimeout(()=>r.classList.add("hidden"),520);
   phase="city"; cityProgress=0; buildSkyline();
