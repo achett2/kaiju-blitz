@@ -548,6 +548,8 @@ function nextRound(){
 }
 function nextFact(){
   if(op==="round") return nextRound();
+  if(op==="mul"){ const a=randInt(2,10), b=randInt(2,10); return {text:`${a} × ${b}`, ans:a*b, kind:"mul"}; }
+  if(op==="div"){ const d=randInt(2,10), q=randInt(2,10); return {text:`${d*q} ÷ ${d}`, ans:q, kind:"div"}; }
   let kind = op==="mix" ? (Math.random()<0.5?"add":"sub") : op;
   if(kind==="add"){ const a=randInt(1,range-1), b=randInt(1,range-a); return {text:`${a} + ${b}`, ans:a+b, kind}; }
   const m=randInt(2,range), s=randInt(1,m-1); return {text:`${m} − ${s}`, ans:m-s, kind};
