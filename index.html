@@ -583,10 +583,11 @@ let cur, entry="", score=0, combo=0, bestCombo=0, smashed=0, correct=0, attempts
     lastAnswerTs=0, bannerTimer=null, qlog=[], curWrong=0, sessionId="", atomicMode=false, timeBonus=0, turboMode=false,
     forcedNext=null, captainWarmup=false, cityTarget=NB;
 
-function buildSkyline(){
+function buildSkyline(n){
+  n = n || NB; cityTarget = n;
   const sky=$("skyline"); sky.innerHTML=""; buildings=[];
   const icons=["🏢","🏬","🏭","🏚️","🗼","🏨"];
-  for(let i=0;i<NB;i++){
+  for(let i=0;i<n;i++){
     const el=document.createElement("div");
     el.className="bldg"; el.textContent=icons[i%icons.length];
     sky.appendChild(el); buildings.push(el);
