@@ -552,7 +552,7 @@ function nextFact(){
 let cur, entry="", score=0, combo=0, bestCombo=0, smashed=0, correct=0, attempts=0,
     timeLeft=0, timer=null, buildings=[], factShownAt=0, totalSolveMs=0,
     phase="city", cityProgress=0, boss=null, bossSpawnCount=0, bossesDefeated=0,
-    lastAnswerTs=0, bannerTimer=null, qlog=[], curWrong=0, sessionId="", atomicMode=false, timeBonus=0;
+    lastAnswerTs=0, bannerTimer=null, qlog=[], curWrong=0, sessionId="", atomicMode=false, timeBonus=0, turboMode=false;
 
 function buildSkyline(){
   const sky=$("skyline"); sky.innerHTML=""; buildings=[];
