@@ -713,7 +713,7 @@ function logResult(acc, pace){
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: op==="round" ? `rounding & estimation, ${duration}s` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: ["round","mul","div"].indexOf(op)>=0 ? `${opLabel}, ${duration}s` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
