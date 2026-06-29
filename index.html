@@ -599,6 +599,14 @@ function smashNext(){
 function updateHud(){ $("score").textContent=score; $("smashed").textContent=smashed; $("combo").textContent="×"+combo; }
 function banner(t){ const b=$("banner"); b.textContent=t; b.classList.remove("on"); void b.offsetWidth; b.classList.add("on");
   clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>b.classList.remove("on"),1100); }
+function takeover(text, ms, penalty){
+  const t=$("takeover"); if(!t) return;
+  $("takeover-text").textContent=text;
+  t.classList.toggle("pen", !!penalty);
+  t.classList.remove("hidden"); inputLocked=true;
+  clearTimeout(takeoverTimer);
+  takeoverTimer=setTimeout(()=>{ t.classList.add("hidden"); inputLocked=false; }, ms||1500);
+}
 
 function showFact(){
   cur=forcedNext||nextFact(); forcedNext=null; entry=""; curWrong=0;
