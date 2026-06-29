@@ -588,7 +588,7 @@ let cur, entry="", score=0, combo=0, bestCombo=0, smashed=0, correct=0, attempts
     forcedNext=null, captainWarmup=false, cityTarget=NB;
 
 function buildSkyline(n){
-  n = n || NB; cityTarget = n;
+  n = n || ((op==="mul"||op==="div") ? MULDIV_BUILDINGS : NB); cityTarget = n;
   const sky=$("skyline"); sky.innerHTML=""; buildings=[];
   const icons=["🏢","🏬","🏭","🏚️","🗼","🏨"];
   for(let i=0;i<n;i++){
