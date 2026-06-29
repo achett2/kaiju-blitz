@@ -738,6 +738,7 @@ function start(){
 }
 
 function endGame(){
+  inputLocked=false; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
   const solvedQ = qlog.length, firstTryQ = qlog.filter(x=>x.wrong===0).length;
   const acc = solvedQ ? Math.round(100*firstTryQ/solvedQ) : 0;
