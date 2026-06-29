@@ -698,6 +698,10 @@ function tap(d){
     attempts++; curWrong++; combo=0; setAtomic(false); updateHud();
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
+    const nowW=performance.now();
+    guessTaps = (nowW - lastWrongAt < GUESS_WINDOW) ? guessTaps+1 : 1;
+    lastWrongAt = nowW;
+    if(guessTaps>=GUESS_LIMIT){ guessTaps=0; timeBonus-=GUESS_PENALTY; takeover("🚫 NO GUESSING!  −"+GUESS_PENALTY+" SECONDS", 1100, true); }
     return;
   }
   attempts++;
