@@ -676,7 +676,7 @@ function tap(d){
   if(inputLocked || timeLeft<=0) return;
   const test=entry+d, ansStr=String(cur.ans);
   if(test===ansStr){
-    const dt=performance.now()-factShownAt; totalSolveMs+=dt;
+    const dt=performance.now()-factShownAt; totalSolveMs+=dt; guessTaps=0;
     qlog.push({ q:cur.text, op:cur.kind, ans:cur.ans, sec:Math.round(dt/10)/100, wrong:curWrong, phase:phase });
     correct++; smashed=correct; combo++; bestCombo=Math.max(bestCombo,combo);
     if(combo>=ATOMIC_STREAK) setAtomic(true);
