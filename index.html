@@ -673,7 +673,7 @@ function defeatBoss(){
 }
 
 function tap(d){
-  if(timeLeft<=0) return;
+  if(inputLocked || timeLeft<=0) return;
   const test=entry+d, ansStr=String(cur.ans);
   if(test===ansStr){
     const dt=performance.now()-factShownAt; totalSolveMs+=dt;
