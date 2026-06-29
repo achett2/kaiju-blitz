@@ -347,7 +347,7 @@ const TURBO_STREAK = 10;      // correct-in-a-row to trigger Turbo Mode (+25 sec
 const $ = id => document.getElementById(id);
 const randInt = (a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 
-let op="add", range=20, duration=60, player="jacob";
+let op="add", range=20, duration=120, player="jacob";
 
 function seg(id, set){
   $(id).querySelectorAll("button").forEach(b=>{
