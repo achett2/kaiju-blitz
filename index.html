@@ -209,6 +209,17 @@
   .takeover.pen{ background:rgba(150,12,22,.94); }
   #takeover-text{ font-family:'Bangers',cursive; font-size:34px; line-height:1.05; text-align:center; color:var(--gold); text-shadow:3px 3px 0 #08090a; transform:rotate(-2deg); }
   .takeover.pen #takeover-text{ color:#ffffff; }
+  .intro-scene{ position:relative; height:210px; margin:6px 0 10px; border:4px solid #08090a; box-shadow:5px 5px 0 #08090a; overflow:hidden;
+    background:linear-gradient(180deg,#182a48 0%,#25415f 52%,#0e2338 52%,#06131f 100%); }
+  .intro-water{ position:absolute; left:0; right:0; bottom:0; height:46%; z-index:2;
+    background:linear-gradient(180deg,rgba(52,110,165,.55),rgba(6,22,42,.9)); border-top:3px solid rgba(150,205,255,.55); }
+  .intro-kaiju{ position:absolute; left:50%; bottom:-6px; width:150px; z-index:1; transform:translate(-50%,130px); }
+  .intro-kaiju.rise{ animation:kaijurise 2.8s ease-out forwards; }
+  @keyframes kaijurise{ 0%{transform:translate(-50%,130px)} 65%{transform:translate(-50%,-8px)} 80%{transform:translate(-50%,3px)} 100%{transform:translate(-50%,-6px)} }
+  .intro-caps{ min-height:52px; text-align:center; padding:0 10px; }
+  .intro-cap{ font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:18px; letter-spacing:.4px; color:var(--ink); opacity:0; transform:translateY(6px); transition:opacity .45s,transform .45s; }
+  .intro-cap.show{ opacity:1; transform:none; }
+  .intro-skip{ display:block; text-align:center; color:var(--gold); cursor:pointer; text-decoration:underline; margin:10px 0 0; font-family:'Barlow Condensed',sans-serif; font-weight:800; letter-spacing:1px; text-transform:uppercase; font-size:14px; }
 
   .hidden{display:none !important;}
 </style>
@@ -219,12 +230,20 @@
   <div class="coinchip" id="coinchip">☢️ <span id="coin-bal">0</span></div>
   <p class="best" id="best-banner">Loading record…</p>
 
+  <!-- ANIMATED INTRO -->
+  <div id="intro">
+    <div class="intro-scene"><div class="intro-kaiju" id="intro-kaiju"></div><div class="intro-water"></div></div>
+    <div class="intro-caps" id="intro-caps"></div>
+    <a class="intro-skip" id="intro-skip">Skip intro ▶</a>
+  </div>
+
   <!-- WHO'S PLAYING (first screen) -->
-  <div id="who">
+  <div id="who" class="hidden">
     <div class="who">
       <h2>Who's playing?</h2>
       <button class="pbtn jacob" data-v="jacob">🦖 Jacob<small>Scores are saved</small></button>
       <button class="pbtn" data-v="test">🧪 Test<small>Practice — not saved</small></button>
+      <a class="intro-skip" id="replay-intro">🎬 Watch intro</a>
     </div>
   </div>
 
@@ -958,4 +977,34 @@ Coins.refresh();   /* pull authoritative balance/owned/hero from the Sheet */
 $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
+
+/* ---- animated intro ---- */
+const INTRO_LINES = [
+  "Long ago, a mighty kaiju slept beneath the sea…",
+  "The city grew lazy, and its brain-power faded.",
+  "Now the kaiju wakes — hungry for FAST, SMART answers!",
+  "Smash the city. Battle the bosses.",
+  "This… is KAIJU BLITZ!"
+];
+let introTimer=null;
+function speakLine(t){ try{ if(window.speechSynthesis){ const u=new SpeechSynthesisUtterance(t); u.rate=0.95; u.pitch=0.9; speechSynthesis.speak(u); } }catch(e){} }
+function playIntro(){
+  $("intro").classList.remove("hidden"); $("who").classList.add("hidden");
+  const k=$("intro-kaiju"); k.innerHTML=monImg("kaiju-classic.png"); k.classList.remove("rise"); void k.offsetWidth; k.classList.add("rise");
+  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+  $("intro-skip").textContent="Skip intro ▶";
+  const caps=$("intro-caps"); caps.innerHTML=""; let i=0;
+  clearTimeout(introTimer);
+  (function next(){
+    if(i>=INTRO_LINES.length){ $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶"; return; }
+    caps.innerHTML='<div class="intro-cap">'+INTRO_LINES[i]+'</div>';
+    const el=caps.firstChild; void el.offsetWidth; el.classList.add("show");
+    speakLine(INTRO_LINES[i]); i++;
+    introTimer=setTimeout(next, 2700);
+  })();
+}
+function enterFromIntro(){ clearTimeout(introTimer); try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} try{ localStorage.setItem("kb_intro_seen","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
+$("intro-skip").onclick=enterFromIntro;
+$("replay-intro").onclick=function(){ $("who").classList.add("hidden"); playIntro(); };
+(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen"); }catch(e){} if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); } else { playIntro(); } })();
 </script>
