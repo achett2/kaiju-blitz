@@ -985,80 +985,83 @@ $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.a
 loadBest();
 
 /* ---- animated intro (cutscene) ---- */
-const INTRO_CAPS=[
-  [100,"Long ago, a mighty kaiju slept beneath the sea…"],
-  [2700,"For a thousand years, it waited in the dark…"],
-  [4700,"Now it WAKES — hungry for fast, smart answers!"],
-  [6700,"Smash the city. Battle the bosses."]
-];
 const INTRO_IMG=new Image(); INTRO_IMG.src="kaiju-classic.png?v=3";
+const HEAD={ x:0.40, y:0.015, w:0.52, h:0.42 };   // head crop (fractions of sprite)
+const MOUTH={ x:0.815, y:0.255 };                 // mouth tip (fractions of sprite)
 let introRAF=0;
 function playIntro(){
   $("intro").classList.remove("hidden"); $("who").classList.add("hidden");
   $("intro-skip").textContent="Skip intro ▶";
   const titleEl=$("intro-title"); titleEl.classList.remove("show");
-  const scene=$("intro-scene"), cv=$("intro-canvas"), caps=$("intro-caps");
+  const scene=$("intro-scene"), cv=$("intro-canvas"), caps=$("intro-caps"); caps.innerHTML="";
   const dpr=Math.min(window.devicePixelRatio||1, 2);
   const rect=scene.getBoundingClientRect();
   const W=cv.width=Math.max(240,Math.round((rect.width||360)*dpr));
   const H=cv.height=Math.max(140,Math.round((rect.height||238)*dpr));
   const ctx=cv.getContext("2d");
-  const img=INTRO_IMG;
-  const oc=document.createElement("canvas"), octx=oc.getContext("2d");
-  const waterY=H*0.60;
-  const rain=[]; for(let i=0;i<120;i++) rain.push({x:Math.random(),y:Math.random(),s:.008+Math.random()*.013,l:(7+Math.random()*11)*dpr});
-  let splash=[], splashDone=false, shakeUntil=0, flash=0, bolt=null;
-  const bolts=[600,6300]; let bi=0, capIdx=-2, titled=false;
-  const TITLE_AT=8200, END_AT=9600;
+  const img=INTRO_IMG, DIAG=Math.hypot(W,H);
+  let chargeP=[], beamP=[], titled=false;
+  const CHARGE_AT=1500, FIRE_AT=2900, FLASH_PEAK=3230, TITLE_AT=3650, END_AT=4700;
   const t0=performance.now();
   cancelAnimationFrame(introRAF);
-  function easeOut(p){ return 1-Math.pow(1-p,3); }
-  function triggerBolt(){ flash=1; const bx=W*(.2+Math.random()*.6); bolt=[[bx,0]]; let x=bx,y=0; while(y<waterY){ x+=(Math.random()-.5)*44*dpr; y+=(20+Math.random()*24)*dpr; bolt.push([x,y]); } }
-  function spawnSplash(){ for(let i=0;i<44;i++){ const a=(-Math.PI/2)+(Math.random()-.5)*1.3, sp=(2.2+Math.random()*5)*dpr; splash.push({x:W/2+(Math.random()-.5)*130*dpr, y:waterY-6*dpr, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp*1.5, life:1}); } }
-  function drawCity(a){ ctx.save(); ctx.globalAlpha=a; ctx.fillStyle="#020406"; const bw=W/9, hs=[.30,.55,.22,.62,.40,.68,.34,.58,.28]; let x=0; for(let i=0;i<9;i++){ const bh=hs[i]*H*.34; ctx.fillRect(x, waterY-bh, bw*0.92, bh); x+=bw; } ctx.restore(); }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function drawHead(zoom){
+    const iw=img.naturalWidth, ih=img.naturalHeight;
+    let sw=HEAD.w*iw/zoom, sh=HEAD.h*ih/zoom;
+    const cx=(HEAD.x+HEAD.w/2)*iw, cy=(HEAD.y+HEAD.h/2)*ih, desired=W/H;
+    if(sw/sh>desired) sw=sh*desired; else sh=sw/desired;
+    let sx=clamp(cx-sw/2,0,iw-sw), sy=clamp(cy-sh/2,0,ih-sh);
+    ctx.drawImage(img, sx,sy,sw,sh, 0,0,W,H);
+    return { mx:(MOUTH.x*iw - sx)/sw*W, my:(MOUTH.y*ih - sy)/sh*H };
+  }
   function frame(now){
     if($("intro").classList.contains("hidden")) return;
     const t=now-t0;
+    const charge = t<FIRE_AT ? clamp((t-CHARGE_AT)/(FIRE_AT-CHARGE_AT),0,1) : Math.max(0,1-(t-FIRE_AT)/500);
+    const grow   = t<FIRE_AT?0:clamp((t-FIRE_AT)/560,0,1);
+    const burst  = t<FIRE_AT?0:Math.max(0,1-(t-FIRE_AT)/1200);
+    const flashA = t<FIRE_AT?0:Math.max(0,1-Math.abs(t-FLASH_PEAK)/520);
     ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,W,H);
-    let ox=0,oy=0; if(t<shakeUntil){ const m=(shakeUntil-t)/200*5*dpr; ox=(Math.random()-.5)*m; oy=(Math.random()-.5)*m; }
+    let sk=0; if(t>CHARGE_AT) sk+=charge*2.2*dpr; if(t>FIRE_AT) sk+=8*dpr*Math.max(0,1-(t-FIRE_AT)/700);
+    const ox=(Math.random()-.5)*sk, oy=(Math.random()-.5)*sk;
     ctx.save(); ctx.translate(ox,oy);
-    let g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#0c1428"); g.addColorStop(.55,"#0a0f1c"); g.addColorStop(1,"#04060b");
-    ctx.fillStyle=g; ctx.fillRect(-20,-20,W+40,H+40);
-    const cityA=Math.max(0,Math.min(1,(t-5000)/900)); if(cityA>0) drawCity(cityA);
-    if(img.complete && img.naturalWidth){
-      const kh=H*0.80, kw=kh*(img.naturalWidth/img.naturalHeight);
-      let rp=t<2600?0:Math.min(1,(t-2600)/1700); rp=easeOut(rp);
-      const subBottom=waterY+kh*0.92, restBottom=waterY+kh*0.30, kbottom=subBottom+(restBottom-subBottom)*rp;
-      const kx=W/2, ky=kbottom-kh;
-      if(!splashDone && rp>0.28){ splashDone=true; spawnSplash(); shakeUntil=t+420; triggerBolt(); }
-      const lit=Math.max(0.12,Math.min(1,(t-3200)/2200)), dark=1-lit;
-      oc.width=img.naturalWidth; oc.height=img.naturalHeight;
-      octx.globalCompositeOperation="source-over"; octx.clearRect(0,0,oc.width,oc.height); octx.drawImage(img,0,0);
-      if(dark>0.01){ octx.globalCompositeOperation="source-atop"; octx.fillStyle="rgba(3,8,16,"+dark+")"; octx.fillRect(0,0,oc.width,oc.height); octx.globalCompositeOperation="source-over"; }
-      ctx.save();
-      if(t>2900){ ctx.shadowColor="rgba(120,195,255,"+Math.min(.85,(t-2900)/2200)+")"; ctx.shadowBlur=24*dpr; }
-      ctx.drawImage(oc, kx-kw/2, ky, kw, kh);
-      ctx.restore();
-      if(t>900 && t<3400){ const fade=Math.max(0,Math.min(1,Math.min((t-900)/500,(3400-t)/500))), pulse=0.55+0.35*Math.sin(t*0.012); const ex=kx+kw*0.20, ey=ky+kh*0.26, rr=12*dpr; const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,rr); eg.addColorStop(0,"rgba(190,248,255,"+(fade*pulse)+")"); eg.addColorStop(1,"rgba(120,220,255,0)"); ctx.save(); ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(ex,ey,rr,0,7); ctx.fill(); ctx.restore(); }
+    ctx.fillStyle="#04060b"; ctx.fillRect(-30,-30,W+60,H+60);
+    let zoom=1.0+clamp(t/FIRE_AT,0,1)*0.16; if(t>FIRE_AT) zoom+=clamp((t-FIRE_AT)/240,0,1)*0.10;
+    let m={mx:W*0.78,my:H*0.55};
+    if(img.complete && img.naturalWidth) m=drawHead(zoom);
+    const mx=m.mx, my=m.my;
+    if(charge>0){
+      ctx.save(); ctx.globalCompositeOperation="lighter";
+      const hr=DIAG*0.5*(0.4+0.6*charge), hgw=ctx.createRadialGradient(mx,my,0,mx,my,hr);
+      hgw.addColorStop(0,"rgba(120,225,255,"+(0.30*charge)+")"); hgw.addColorStop(1,"rgba(40,140,255,0)");
+      ctx.fillStyle=hgw; ctx.fillRect(0,0,W,H); ctx.restore();
     }
-    for(let i=splash.length-1;i>=0;i--){ const p=splash[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.2*dpr; p.life-=0.02; if(p.life<=0||p.y>H){ splash.splice(i,1); continue; } ctx.globalAlpha=Math.max(0,p.life); ctx.fillStyle="rgba(205,232,255,.92)"; ctx.beginPath(); ctx.arc(p.x,p.y,2*dpr,0,7); ctx.fill(); }
-    ctx.globalAlpha=1;
-    let wg=ctx.createLinearGradient(0,waterY,0,H); wg.addColorStop(0,"rgba(30,66,108,.55)"); wg.addColorStop(1,"rgba(4,12,24,.96)");
-    ctx.beginPath(); ctx.moveTo(0,H);
-    for(let x=0;x<=W;x+=8){ const y=waterY+Math.sin(x*0.02+t*0.004)*3*dpr+Math.sin(x*0.008-t*0.006)*4*dpr; ctx.lineTo(x,y); }
-    ctx.lineTo(W,H); ctx.closePath(); ctx.fillStyle=wg; ctx.fill();
-    ctx.strokeStyle="rgba(150,205,255,.32)"; ctx.lineWidth=1.4*dpr; ctx.beginPath();
-    for(let x=0;x<=W;x+=8){ const y=waterY+Math.sin(x*0.02+t*0.004)*3*dpr+Math.sin(x*0.008-t*0.006)*4*dpr; if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.stroke();
-    ctx.strokeStyle="rgba(170,200,240,.32)"; ctx.lineWidth=1*dpr; ctx.beginPath();
-    for(const r of rain){ r.y+=r.s; if(r.y>1){ r.y=0; r.x=Math.random(); } const px=r.x*W, py=r.y*H; ctx.moveTo(px,py); ctx.lineTo(px-4*dpr,py+r.l); } ctx.stroke();
-    if(bi<bolts.length && t>=bolts[bi]){ triggerBolt(); shakeUntil=Math.max(shakeUntil,t+260); bi++; }
-    if(bolt && flash>0.35){ ctx.strokeStyle="rgba(220,235,255,"+Math.min(1,flash)+")"; ctx.lineWidth=2.4*dpr; ctx.beginPath(); ctx.moveTo(bolt[0][0],bolt[0][1]); for(let i=1;i<bolt.length;i++) ctx.lineTo(bolt[i][0],bolt[i][1]); ctx.stroke(); }
-    if(flash>0){ ctx.fillStyle="rgba(220,232,255,"+flash*0.5+")"; ctx.fillRect(-20,-20,W+40,H+40); flash-=0.05; }
+    if(charge>0 && t<FIRE_AT){ for(let n=0;n<3;n++){ chargeP.push({a:Math.random()*Math.PI*2, d:(40+Math.random()*70)*dpr, life:1}); } }
+    ctx.save(); ctx.globalCompositeOperation="lighter";
+    for(let i=chargeP.length-1;i>=0;i--){ const p=chargeP[i]; p.d-=3.2*dpr; p.life-=0.03; if(p.d<=0||p.life<=0){ chargeP.splice(i,1); continue; } const px=mx+Math.cos(p.a)*p.d, py=my+Math.sin(p.a)*p.d; ctx.fillStyle="rgba(180,245,255,"+Math.max(0,p.life)+")"; ctx.beginPath(); ctx.arc(px,py,1.8*dpr,0,7); ctx.fill(); }
     ctx.restore();
-    let want=-1; for(let i=0;i<INTRO_CAPS.length;i++){ if(t>=INTRO_CAPS[i][0]) want=i; }
-    if(want!==capIdx){ capIdx=want; caps.innerHTML= want>=0 ? '<div class="intro-cap show">'+INTRO_CAPS[want][1]+'</div>' : ''; }
-    if(!titled && t>=TITLE_AT){ titled=true; titleEl.classList.add("show"); triggerBolt(); shakeUntil=t+360; caps.innerHTML=''; }
-    if(t>=END_AT){ $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶"; }
+    if(charge>0){
+      ctx.save(); ctx.globalCompositeOperation="lighter";
+      const r=(4+charge*34)*dpr*(0.9+0.12*Math.sin(t*0.03)), og=ctx.createRadialGradient(mx,my,0,mx,my,r);
+      og.addColorStop(0,"rgba(240,255,255,"+(0.55+0.45*charge)+")"); og.addColorStop(0.4,"rgba(100,225,255,"+(0.5*charge)+")"); og.addColorStop(1,"rgba(40,150,255,0)");
+      ctx.fillStyle=og; ctx.beginPath(); ctx.arc(mx,my,r,0,7); ctx.fill(); ctx.restore();
+    }
+    if(t>=FIRE_AT){
+      ctx.save(); ctx.globalCompositeOperation="lighter";
+      const R=Math.max(1,grow*DIAG*1.35), bg=ctx.createRadialGradient(mx,my,0,mx,my,R);
+      bg.addColorStop(0,"rgba(255,255,255,"+(0.95*burst+0.15)+")"); bg.addColorStop(0.22,"rgba(160,245,255,"+(0.85*burst)+")"); bg.addColorStop(0.55,"rgba(60,175,255,"+(0.45*burst)+")"); bg.addColorStop(1,"rgba(20,120,255,0)");
+      ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(mx,my,R,0,7); ctx.fill();
+      for(let k=0;k<3;k++){ const rr=clamp(grow*1.2-k*0.22,0,1)*R; if(rr>2){ ctx.strokeStyle="rgba(210,248,255,"+(0.4*burst)+")"; ctx.lineWidth=3*dpr; ctx.beginPath(); ctx.arc(mx,my,rr,0,7); ctx.stroke(); } }
+      ctx.restore();
+      if(burst>0.15){ const baseA=Math.atan2(H*0.5-my,W*0.5-mx); for(let n=0;n<5;n++){ const a=baseA+(Math.random()-.5)*1.1, sp=(7+Math.random()*12)*dpr; beamP.push({x:mx,y:my,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1}); } }
+    }
+    ctx.save(); ctx.globalCompositeOperation="lighter";
+    for(let i=beamP.length-1;i>=0;i--){ const p=beamP[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=1.02; p.vy*=1.02; p.life-=0.04; if(p.life<=0){ beamP.splice(i,1); continue; } ctx.strokeStyle="rgba(200,248,255,"+Math.max(0,p.life)+")"; ctx.lineWidth=2*dpr; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x-p.vx*1.5,p.y-p.vy*1.5); ctx.stroke(); }
+    ctx.restore();
+    ctx.restore();
+    if(flashA>0){ ctx.fillStyle="rgba(228,251,255,"+(flashA*0.94)+")"; ctx.fillRect(0,0,W,H); }
+    if(!titled && t>=TITLE_AT){ titled=true; titleEl.classList.add("show"); }
+    if(t>=END_AT) $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶";
     introRAF=requestAnimationFrame(frame);
   }
   introRAF=requestAnimationFrame(frame);
