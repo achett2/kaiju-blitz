@@ -1006,32 +1006,34 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 
-/* ---- animated intro ---- */
-const INTRO_LINES = [
-  "Long ago, a mighty kaiju slept beneath the sea…",
-  "The city grew lazy, and its brain-power faded.",
-  "Now the kaiju wakes — hungry for FAST, SMART answers!",
-  "Smash the city. Battle the bosses.",
-  "This… is KAIJU BLITZ!"
+/* ---- animated intro (cutscene) ---- */
+const INTRO_SHOTS = [
+  { cls:"s1", cap:"Long ago, a mighty kaiju slept beneath the sea…", ms:3200, flash:true },
+  { cls:"s2", cap:"For a thousand years, it waited in the dark…", ms:2800 },
+  { cls:"s3", cap:"Now it WAKES — hungry for fast, smart answers!", ms:3200, flash:true },
+  { cls:"s4", cap:"Smash the city. Battle the bosses.", ms:2800, flash:true },
+  { cls:"s5", cap:"", ms:2800 }
 ];
 let introTimer=null;
-function speakLine(t){ try{ if(window.speechSynthesis){ const u=new SpeechSynthesisUtterance(t); u.rate=0.95; u.pitch=0.9; speechSynthesis.speak(u); } }catch(e){} }
 function playIntro(){
   $("intro").classList.remove("hidden"); $("who").classList.add("hidden");
-  const k=$("intro-kaiju"); k.innerHTML=monImg("kaiju-classic.png"); k.classList.remove("rise"); void k.offsetWidth; k.classList.add("rise");
-  try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){}
+  $("intro-kaiju").innerHTML=monImg("kaiju-classic.png");
   $("intro-skip").textContent="Skip intro ▶";
-  const caps=$("intro-caps"); caps.innerHTML=""; let i=0;
-  clearTimeout(introTimer);
-  (function next(){
-    if(i>=INTRO_LINES.length){ $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶"; return; }
-    caps.innerHTML='<div class="intro-cap">'+INTRO_LINES[i]+'</div>';
-    const el=caps.firstChild; void el.offsetWidth; el.classList.add("show");
-    speakLine(INTRO_LINES[i]); i++;
-    introTimer=setTimeout(next, 2700);
-  })();
+  const sc=$("intro-scene"), caps=$("intro-caps");
+  sc.className="intro-scene"; caps.innerHTML=""; void sc.offsetWidth;
+  let i=0; clearTimeout(introTimer);
+  function shot(){
+    if(i>=INTRO_SHOTS.length){ $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶"; return; }
+    const s=INTRO_SHOTS[i];
+    sc.className="intro-scene "+s.cls;
+    caps.innerHTML = s.cap ? '<div class="intro-cap">'+s.cap+'</div>' : '';
+    if(s.cap){ const el=caps.firstChild; void el.offsetWidth; el.classList.add("show"); }
+    if(s.flash){ const f=$("intro-flash"); f.classList.remove("on"); void f.offsetWidth; f.classList.add("on"); }
+    i++; introTimer=setTimeout(shot, s.ms);
+  }
+  introTimer=setTimeout(shot, 250);
 }
-function enterFromIntro(){ clearTimeout(introTimer); try{ if(window.speechSynthesis) speechSynthesis.cancel(); }catch(e){} try{ localStorage.setItem("kb_intro_seen","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
+function enterFromIntro(){ clearTimeout(introTimer); try{ localStorage.setItem("kb_intro_seen","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
 $("intro-skip").onclick=enterFromIntro;
 $("replay-intro").onclick=function(){ $("who").classList.add("hidden"); playIntro(); };
 (function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen"); }catch(e){} if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); } else { playIntro(); } })();
