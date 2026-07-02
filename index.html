@@ -1033,8 +1033,8 @@ function playIntro(){
   }
   introTimer=setTimeout(shot, 250);
 }
-function enterFromIntro(){ clearTimeout(introTimer); try{ localStorage.setItem("kb_intro_seen","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
+function enterFromIntro(){ clearTimeout(introTimer); try{ localStorage.setItem("kb_intro_seen2","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
 $("intro-skip").onclick=enterFromIntro;
 $("replay-intro").onclick=function(){ $("who").classList.add("hidden"); playIntro(); };
-(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen"); }catch(e){} if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); } else { playIntro(); } })();
+(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen2"); }catch(e){} if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); } else { playIntro(); } })();
 </script>
