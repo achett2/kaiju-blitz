@@ -677,12 +677,14 @@ function cityCleared(){
     spawnBoss();
   }
 }
-function spawnBoss(){
+function spawnBoss(nameArg, hitsArg){
   phase="boss"; bossSpawnCount++;
-  const roster=ROSTERS[op]||ROSTERS.add;
-  const name=roster[(bossSpawnCount-1)%roster.length];
+  let name, hitModel=false;
+  if(nameArg){ name=nameArg; hitModel=true; }        // round mode: fixed hits
+  else { const roster=ROSTERS[op]||ROSTERS.add; name=roster[(bossSpawnCount-1)%roster.length]; }
   const isCaptain = name==="Captain Underpants";
-  boss={ name, max: isCaptain ? 1 : 90+(bossSpawnCount-1)*40 }; boss.hp=boss.max;
+  const maxHp = hitModel ? (hitsArg||4) : (isCaptain ? 1 : 90+(bossSpawnCount-1)*40);
+  boss={ name, max: maxHp, hitModel }; boss.hp=boss.max;
   if(isCaptain) forcedNext={text:"1 + 1", ans:2, kind:"add"};
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
