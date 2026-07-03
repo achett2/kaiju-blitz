@@ -365,6 +365,13 @@ const ACTIVITY = "Math Facts — Kaiju Blitz";
 const NB = 10;                // buildings per wave
 const CAPTAIN_BUILDINGS = 4;  // shorter wave before the Captain Underpants gag
 const MULDIV_BUILDINGS = 6;   // shorter waves for the harder mult/div modes
+// Round mode is a scripted loop: entry 0 runs once, then it loops from entry 1.
+// hits = correct answers needed to defeat that boss.
+const ROUND_PLAYLIST = [
+  { buildings:6, boss:"Roundor",           hits:4 },
+  { buildings:4, boss:"Captain Underpants", hits:1 },
+  { buildings:4, boss:"Roundor",           hits:4 }
+];
 const GUESS_WINDOW = 1200;    // ms; wrong answers faster than this count as rapid guessing
 const GUESS_LIMIT = 3;        // rapid wrongs in a row that trigger the guessing penalty
 const GUESS_PENALTY = 5;      // seconds deducted for guessing
