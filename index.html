@@ -1038,7 +1038,7 @@ function playIntro(){
   cancelAnimationFrame(introRAF);
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
   function activeImg(){ return INTRO_FACE_OK ? INTRO_FACE : INTRO_CLASSIC; }
-  function coords(){ return INTRO_FACE_OK ? { el:[0.40,0.44], er:[0.60,0.44], mo:[0.50,0.66] }
+  function coords(){ return INTRO_FACE_OK ? { el:[0.355,0.35], er:[0.65,0.35], mo:[0.48,0.72] }
                                           : { el:[0.60,0.27], er:[0.73,0.30], mo:[0.815,0.255] }; }
   function faceMap(img){
     const iw=img.naturalWidth, ih=img.naturalHeight, desired=W/H;
