@@ -590,11 +590,14 @@ function loadBest(){
 /* ---- facts ---- */
 function nextRound(){
   const HINT="Estimate by rounding both numbers first";
+  // "nice" number to round to 10: never already a multiple of 10, never a
+  // tricky halfway (ends in 5) — those are the main things kids trip on.
+  function nice(min,max){ let n; do{ n=randInt(min,max); }while(n%10===0 || n%10===5); return n; }
   const r=Math.random();
-  if(r<0.55){ let n=randInt(11,98); if(n%10===0) n+=randInt(1,9); return {text:`Round ${n} to 10`, ans:10*Math.round(n/10), kind:"round"}; }
-  if(r<0.72){ const n=randInt(110,890); return {text:`Round ${n} to 100`, ans:100*Math.round(n/100), kind:"round"}; }
-  if(r<0.88){ const a=randInt(11,59), b=randInt(11,49); return {text:`${a} + ${b}`, ans:10*Math.round(a/10)+10*Math.round(b/10), kind:"round", hint:HINT}; }
-  const a=randInt(31,69), b=randInt(11,a-10); return {text:`${a} − ${b}`, ans:10*Math.round(a/10)-10*Math.round(b/10), kind:"round", hint:HINT};
+  if(r<0.74){ const n=nice(11,98); return {text:`Round ${n} to 10`, ans:10*Math.round(n/10), kind:"round"}; }
+  if(r<0.87){ const base=randInt(1,8)*100, off=(Math.random()<0.5?randInt(6,32):randInt(68,94)), n=base+off; return {text:`Round ${n} to 100`, ans:100*Math.round(n/100), kind:"round"}; }
+  // estimate: only addition now, small numbers, no ambiguous halves
+  const a=nice(11,38), b=nice(11,38); return {text:`${a} + ${b}`, ans:10*Math.round(a/10)+10*Math.round(b/10), kind:"round", hint:HINT};
 }
 function nextFact(){
   if(op==="round") return nextRound();
