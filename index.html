@@ -767,7 +767,9 @@ function start(){
   qlog=[]; curWrong=0; sessionId="KB-"+Date.now().toString(36);
   updateHud(); $("time-left").textContent=duration; $("time-fill").style.width="100%";
   $("rival").classList.add("hidden");
-  $("hero").innerHTML=getHeroSVG(); $("hero").classList.remove("charged","turbo"); buildSkyline(); showFact();
+  $("hero").innerHTML=getHeroSVG(); $("hero").classList.remove("charged","turbo");
+  roundStep=0; if(op==="round") startRoundWave(); else buildSkyline();
+  showFact();
   $("start").classList.add("hidden"); $("end").classList.add("hidden"); $("game").classList.remove("hidden"); $("best-banner").style.display="none"; $("coinchip").classList.add("hidden");
   clearInterval(timer);
   const startTs=Date.now(); lastAnswerTs=performance.now();
