@@ -660,7 +660,14 @@ function paceMult(sec){ return sec<=1.5?2.0 : sec<=3?1.5 : sec<=5?1.0 : 0.6; }
 function comboMult(c){ return 1 + Math.min(c,10)*0.1; }   // up to 2x
 function computeDamage(sec,c){ return Math.max(4, Math.round(10*paceMult(sec)*comboMult(c))); }
 
+// Build the wave for the current round-mode playlist step; the Captain step
+// leads in with the "running late" takeover gag.
+function startRoundWave(){
+  const e=ROUND_PLAYLIST[roundStep]; cityProgress=0; buildSkyline(e.buildings);
+  if(e.boss==="Captain Underpants"){ timeBonus+=20; takeover("IT SEEMS OUR VILLAIN IS RUNNING LATE!  ⏱️ +20s", 2000); }
+}
 function cityCleared(){
+  if(op==="round"){ const e=ROUND_PLAYLIST[roundStep]; spawnBoss(e.boss, e.hits); return; }
   const roster=ROSTERS[op]||ROSTERS.add;
   const upcoming=roster[bossSpawnCount % roster.length];
   if(upcoming==="Captain Underpants" && !captainWarmup){
