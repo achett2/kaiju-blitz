@@ -1033,7 +1033,7 @@ function playIntro(){
   const ctx=cv.getContext("2d"), DIAG=Math.hypot(W,H);
   const oc=document.createElement("canvas"), octx=oc.getContext("2d");
   let chargeP=[], beamP=[], titled=false;
-  const EYES_AT=3400, FACE_AT=5000, CHARGE_AT=6800, FIRE_AT=8000, FLASH_PEAK=8320, TITLE_AT=8650, END_AT=9700;
+  const EYES_AT=3400, FACE_AT=6600, CHARGE_AT=8200, FIRE_AT=9400, FLASH_PEAK=9720, TITLE_AT=10050, END_AT=11100;
   const t0=performance.now();
   cancelAnimationFrame(introRAF);
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
