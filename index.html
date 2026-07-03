@@ -718,7 +718,9 @@ function defeatBoss(){
   if(wasCaptain) captainWarmup=false;
   const r=$("rival"); r.innerHTML='<div style="font-size:60px;text-align:center;">💥</div>';
   setTimeout(()=>r.classList.add("hidden"),520);
-  phase="city"; cityProgress=0; buildSkyline();
+  phase="city"; cityProgress=0;
+  if(op==="round"){ roundStep++; if(roundStep>=ROUND_PLAYLIST.length) roundStep=1; startRoundWave(); }
+  else buildSkyline();
 }
 
 function tap(d){
