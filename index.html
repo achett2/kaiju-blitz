@@ -736,8 +736,8 @@ function tap(d){
       smashNext(); cityProgress++;
       if(cityProgress>=cityTarget) cityCleared();
     } else {
-      let dmg=computeDamage(dt/1000, combo);
-      boss.hp-=dmg; fireBeam(); hitRival(); showDamage(dmg); lastAnswerTs=performance.now();
+      let dmg = boss.hitModel ? 1 : computeDamage(dt/1000, combo);
+      boss.hp-=dmg; fireBeam(); hitRival(); if(!boss.hitModel) showDamage(dmg); lastAnswerTs=performance.now();
       if(boss.hp<=0) defeatBoss(); else updateBossHp();
     }
     showFact();
