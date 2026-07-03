@@ -1129,8 +1129,8 @@ function playIntro(){
   }
   introRAF=requestAnimationFrame(frame);
 }
-function enterFromIntro(){ cancelAnimationFrame(introRAF); try{ localStorage.setItem("kb_intro_seen5","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
+function enterFromIntro(){ cancelAnimationFrame(introRAF); try{ localStorage.setItem("kb_intro_seen6","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
 $("intro-skip").onclick=enterFromIntro;
 $("replay-intro").onclick=function(){ $("who").classList.add("hidden"); playIntro(); };
-(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen5"); }catch(e){} if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); } else { playIntro(); } })();
+(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen6"); }catch(e){} if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); } else { playIntro(); } })();
 </script>
