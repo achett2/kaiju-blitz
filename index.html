@@ -869,9 +869,11 @@ function endDuel(win){
   setTimeout(()=>{ endGame(win); }, win?520:300);
 }
 
-function endGame(){
+function endGame(win){
   inputLocked=false; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
+  if(op==="skip"){ $("e-big").textContent = win ? "⚙️💥" : "🦖💀"; $("e-title").textContent = win ? "MEGABOLT DESTROYED!" : "MEGABOLT WON…"; }
+  else { $("e-big").textContent="🦖💥"; $("e-title").textContent="RAMPAGE OVER!"; }
   const solvedQ = qlog.length, firstTryQ = qlog.filter(x=>x.wrong===0).length;
   const acc = solvedQ ? Math.round(100*firstTryQ/solvedQ) : 0;
   const pace = correct ? Math.round((totalSolveMs/1000/correct)*10)/10 : null;
