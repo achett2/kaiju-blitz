@@ -504,9 +504,11 @@ function monImg(src, fb){ return '<img src="'+src+'?v=3" class="mon" alt=""'+(fb
 function getHeroSVG(){ const h=Coins.hero();
   if(h==="atomic") return monImg("kaiju-atomic.png");
   if(h==="superman") return monImg("kaiju-superman.png","kaiju-classic.png");
+  if(h==="gunner") return monImg("gunner-godzilla.png","kaiju-atomic.png");
   return monImg("kaiju-classic.png"); }
 function chargedHeroSVG(){
   if(Coins.hero()==="superman") return monImg("kaiju-superman-charged.png","kaiju-superman.png");
+  if(Coins.hero()==="gunner") return monImg("gunner-godzilla.png","kaiju-atomic.png");
   return monImg("kaiju-atomic.png");   /* classic & atomic both power up to the atomic form */
 }
 
