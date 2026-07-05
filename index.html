@@ -817,10 +817,19 @@ function start(){
   updateHud(); $("time-left").textContent=duration; $("time-fill").style.width="100%";
   $("rival").classList.add("hidden");
   $("hero").innerHTML=getHeroSVG(); $("hero").classList.remove("charged","turbo");
-  roundStep=0; if(op==="round") startRoundWave(); else buildSkyline();
-  showFact();
   $("start").classList.add("hidden"); $("end").classList.add("hidden"); $("game").classList.remove("hidden"); $("best-banner").style.display="none"; $("coinchip").classList.add("hidden");
   clearInterval(timer);
+
+  if(op==="skip"){
+    // untimed one-on-one health duel vs Megabolt — no timer, no city
+    duelOver=false; playerHP=SKIP_PLAYER_HP; timeLeft=999;
+    $("timebar").classList.add("hidden"); $("time-stat").classList.add("hidden"); $("herohp").classList.remove("hidden"); updateHeroHp();
+    spawnMegabolt(); showFact();
+    return;
+  }
+  $("timebar").classList.remove("hidden"); $("time-stat").classList.remove("hidden"); $("herohp").classList.add("hidden");
+  roundStep=0; if(op==="round") startRoundWave(); else buildSkyline();
+  showFact();
   const startTs=Date.now(); lastAnswerTs=performance.now();
   timer=setInterval(()=>{
     timeLeft=Math.max(0, duration+timeBonus-(Date.now()-startTs)/1000);
@@ -832,6 +841,32 @@ function start(){
     }
     if(timeLeft<=0){ clearInterval(timer); endGame(); }
   },100);
+}
+
+/* ---- skip-counting duel helpers ---- */
+function updateHeroHp(){ const f=$("herohp-fill"); if(f) f.style.width=Math.max(0,100*playerHP/SKIP_PLAYER_HP)+"%"; }
+function spawnMegabolt(){
+  phase="boss"; bossSpawnCount++;
+  boss={ name:"Megabolt", max:SKIP_BOSS_HP, hp:SKIP_BOSS_HP, hitModel:false, duel:true };
+  const r=$("rival");
+  r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
+    + `<div class="bosslabel">Megabolt</div>` + bossArt("Megabolt");
+  r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
+  banner("⚙️ MEGABOLT ATTACKS! Skip-count to strike!");
+}
+function villainStrike(){
+  playerHP=Math.max(0, playerHP-SKIP_STRIKE); updateHeroHp();
+  const sc=$("scene"); sc.classList.remove("struck"); void sc.offsetWidth; sc.classList.add("struck");
+  const h=$("hero"); h.classList.add("hit"); setTimeout(()=>h.classList.remove("hit"),200);
+  banner("💥 MEGABOLT STRIKES BACK!  −"+SKIP_STRIKE+" HP");
+  if(playerHP<=0) endDuel(false);
+}
+function endDuel(win){
+  duelOver=true; inputLocked=true;
+  SkipGate.inc();
+  const r=$("rival");
+  if(win){ r.innerHTML='<div style="font-size:60px;text-align:center;">💥</div>'; bossesDefeated++; score+=80; }
+  setTimeout(()=>{ endGame(win); }, win?520:300);
 }
 
 function endGame(){
