@@ -409,11 +409,29 @@ let op="add", range=20, duration=120, player="jacob";
 
 function seg(id, set){
   $(id).querySelectorAll("button").forEach(b=>{
-    b.onclick=()=>{ $(id).querySelectorAll("button").forEach(x=>x.classList.remove("on"));
-      b.classList.add("on"); set(b.getAttribute("data-v")); };
+    b.onclick=()=>{ const v=b.getAttribute("data-v");
+      if(set(v)===false) return;   // setter can veto the selection (e.g. locked)
+      $(id).querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on"); };
   });
 }
-seg("op", v=>{ op=v; $("range-group").classList.toggle("hidden", v==="round"||v==="mul"||v==="div"); }); seg("range", v=>range=+v);
+/* Skip-counting play counter gates Mult/Div (per device). */
+const SkipGate = {
+  plays(){ try{ return +localStorage.getItem("kb_skip_plays")||0; }catch(e){ return 0; } },
+  inc(){ try{ localStorage.setItem("kb_skip_plays", this.plays()+1); }catch(e){} },
+  unlocked(){ return this.plays()>=SKIP_UNLOCK; }
+};
+function refreshLocks(){
+  const locked=!SkipGate.unlocked();
+  $("op").querySelectorAll('button[data-v="mul"],button[data-v="div"]').forEach(b=>b.classList.toggle("locked", locked));
+  const note=$("lock-note");
+  if(locked){ note.textContent="🔒 Mult & Div unlock after "+SKIP_UNLOCK+" Skip-Counting games ("+SkipGate.plays()+"/"+SKIP_UNLOCK+")"; note.classList.remove("hidden"); }
+  else note.classList.add("hidden");
+}
+seg("op", v=>{
+  if((v==="mul"||v==="div") && !SkipGate.unlocked()){ refreshLocks(); return false; }
+  op=v; $("range-group").classList.toggle("hidden", v==="round"||v==="mul"||v==="div"||v==="skip");
+}); seg("range", v=>range=+v);
 
 /* ---- who's playing: dedicated first screen ---- */
 function pickPlayer(v){
