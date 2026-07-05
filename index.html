@@ -803,6 +803,7 @@ function tap(d){
     attempts++; curWrong++; combo=0; setAtomic(false); updateHud();
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
+    if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
     const nowW=performance.now();
     guessTaps = (nowW - lastWrongAt < GUESS_WINDOW) ? guessTaps+1 : 1;
     lastWrongAt = nowW;
