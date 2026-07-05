@@ -880,6 +880,20 @@ function spawnMegabolt(){
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
   banner(v.cry);
 }
+/* Shotgun Godzilla: stored atomic "shells" get redirected as a ×3 blast on your next hit */
+function updateShells(){ const el=$("shells"); if(!el) return;
+  if(Coins.hero()==="gunner" && shells>0){ el.textContent="🔫".repeat(shells); el.classList.remove("hidden"); } else el.classList.add("hidden"); }
+function applyShell(dmg){
+  if(Coins.hero()==="gunner" && shells>0){ shells--; updateShells(); banner("💥 REDIRECTED ATOMIC BLAST! ×3"); return dmg*3; }
+  return dmg;
+}
+function awardMysteryBox(){
+  Coins.grant("gunner"); updateCoinUI();
+  $("hero").innerHTML=getHeroSVG();
+  const el=$("mysterybox");
+  el.innerHTML = "<b>🎁 MYSTERY BOX!</b>You unlocked <b style='display:inline;font-size:16px;'>🦖🔫 Shotgun Godzilla</b> — it absorbs his atomic breath and redirects it as a blast. Equipped!";
+  el.classList.remove("hidden");
+}
 function villainStrike(){
   playerHP=Math.max(0, playerHP-SKIP_STRIKE); updateHeroHp();
   const sc=$("scene"); sc.classList.remove("struck"); void sc.offsetWidth; sc.classList.add("struck");
