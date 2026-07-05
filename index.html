@@ -1251,6 +1251,22 @@ function playIntro(){
     const ox=(Math.random()-.5)*sk, oy=(Math.random()-.5)*sk;
     ctx.save(); ctx.translate(ox,oy);
     ctx.fillStyle="#000"; ctx.fillRect(-30,-30,W+60,H+60);
+    // story flashes behind the narration
+    for(let fi=0; fi<INTRO_FLASH.length; fi++){
+      const f=INTRO_FLASH[fi], local=t-f.at;
+      if(local>=0 && local<=f.dur){
+        const fimg=INTRO_FLASH_IMGS[f.name];
+        if(fimg && fimg.complete && fimg.naturalWidth){
+          const fin=140, fout=180; let fa;
+          if(local<fin) fa=local/fin; else if(local>f.dur-fout) fa=Math.max(0,(f.dur-local)/fout); else fa=1;
+          const iw=fimg.naturalWidth, ih=fimg.naturalHeight, des=W/H;
+          let sw=iw, sh=ih; if(iw/ih>des) sw=ih*des; else sh=iw/des;   // cover-fit
+          const z=1.0+0.12*(local/f.dur); sw/=z; sh/=z;
+          ctx.save(); ctx.globalAlpha=fa; ctx.drawImage(fimg,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,W,H); ctx.restore();
+          if(local<130){ ctx.save(); ctx.globalCompositeOperation="lighter"; ctx.fillStyle="rgba(235,245,255,"+(0.55*(1-local/130))+")"; ctx.fillRect(0,0,W,H); ctx.restore(); }
+        }
+      }
+    }
     const img=activeImg(), C=coords();
     const faceLight=clamp((t-FACE_AT)/1500,0,1);
     let eL={x:W*0.42,y:H*0.46}, eR={x:W*0.58,y:H*0.46}, mo={x:W*0.5,y:H*0.62};
