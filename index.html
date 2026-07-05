@@ -871,7 +871,7 @@ function villainStrike(){
   playerHP=Math.max(0, playerHP-SKIP_STRIKE); updateHeroHp();
   const sc=$("scene"); sc.classList.remove("struck"); void sc.offsetWidth; sc.classList.add("struck");
   const h=$("hero"); h.classList.add("hit"); setTimeout(()=>h.classList.remove("hit"),200);
-  banner("💥 MEGABOLT STRIKES BACK!  −"+SKIP_STRIKE+" HP");
+  banner("💥 "+((boss&&boss.name)||"MEGABOLT").toUpperCase()+" STRIKES BACK!  −"+SKIP_STRIKE+" HP");
   if(playerHP<=0) endDuel(false);
 }
 function endDuel(win){
