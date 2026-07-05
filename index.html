@@ -1128,7 +1128,7 @@ function playIntro(){
   const ctx=cv.getContext("2d"), DIAG=Math.hypot(W,H);
   const oc=document.createElement("canvas"), octx=oc.getContext("2d");
   let chargeP=[], beamP=[], titled=false;
-  const EYES_AT=3400, FACE_AT=6600, CHARGE_AT=8200, FIRE_AT=9400, FLASH_PEAK=9720, TITLE_AT=10050, END_AT=11100;
+  const EYES_AT=6000, FACE_AT=8300, CHARGE_AT=9900, FIRE_AT=11100, FLASH_PEAK=11420, TITLE_AT=11750, END_AT=12800;
   const t0=performance.now();
   cancelAnimationFrame(introRAF);
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
