@@ -1178,6 +1178,9 @@ function playIntro(){
   $("intro").classList.remove("hidden"); $("who").classList.add("hidden");
   $("intro-start").classList.add("hidden");
   $("intro-skip").textContent="Skip intro ▶";
+  // unlock audio inside the Play-Intro tap so it can start later at the eyes beat
+  const introAu=$("intro-audio");
+  if(introAu){ try{ introAu.pause(); introAu.currentTime=0; introAu.volume=1; const p=introAu.play(); if(p&&p.then) p.then(()=>{ introAu.pause(); introAu.currentTime=0; }).catch(()=>{}); }catch(e){} }
   const titleEl=$("intro-title"); titleEl.classList.remove("show");
   const scene=$("intro-scene"), cv=$("intro-canvas"), caps=$("intro-caps"); caps.innerHTML="";
   try{ if(document.fonts && document.fonts.load) document.fonts.load("700 40px Bangers"); }catch(e){}
