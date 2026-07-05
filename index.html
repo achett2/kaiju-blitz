@@ -879,13 +879,14 @@ const SKIP_VILLAINS = [
 ];
 function spawnMegabolt(){
   phase="boss"; bossSpawnCount++;
-  const v = SKIP_VILLAINS[SkipGate.plays() % SKIP_VILLAINS.length];   // Primal Wraith first, then alternates
+  // Only the Primal Wraith appears until Jacob has beaten him 10 times; then villains alternate.
+  const v = SkipGate.wraithBeaten() ? SKIP_VILLAINS[SkipGate.plays() % SKIP_VILLAINS.length] : SKIP_VILLAINS[0];
   boss={ name:v.name, max:SKIP_BOSS_HP, hp:SKIP_BOSS_HP, hitModel:false, duel:true };
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
     + `<div class="bosslabel">${v.name}</div>` + bossArt(v.name);
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
-  if(v.intro) takeover(v.intro, 2800); else banner(v.cry);
+  if(v.intro && !SkipGate.introSeen()){ SkipGate.setIntroSeen(); takeover(v.intro, 2800); } else banner(v.cry);
 }
 /* Shotgun Godzilla: stored atomic "shells" get redirected as a ×3 blast on your next hit */
 function updateShells(){ const el=$("shells"); if(!el) return;
