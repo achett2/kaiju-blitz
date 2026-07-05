@@ -830,6 +830,7 @@ function start(){
   if(op==="skip"){
     // untimed one-on-one health duel vs Megabolt — no timer, no city
     duelOver=false; playerHP=SKIP_PLAYER_HP; timeLeft=999;
+    $("skyline").innerHTML=""; buildings=[];
     $("timebar").classList.add("hidden"); $("time-stat").classList.add("hidden"); $("herohp").classList.remove("hidden"); updateHeroHp();
     spawnMegabolt(); showFact();
     return;
