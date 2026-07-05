@@ -833,6 +833,7 @@ function start(){
   score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
   phase="city"; cityProgress=0; boss=null; bossSpawnCount=0; bossesDefeated=0; captainWarmup=false; forcedNext=null;
   inputLocked=false; guessTaps=0; lastWrongAt=0; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
+  shells=0; updateShells();
   qlog=[]; curWrong=0; sessionId="KB-"+Date.now().toString(36);
   updateHud(); $("time-left").textContent=duration; $("time-fill").style.width="100%";
   $("rival").classList.add("hidden");
