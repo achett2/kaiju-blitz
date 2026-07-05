@@ -439,6 +439,7 @@ function pickPlayer(v){
   $("who-label").textContent = v==="jacob" ? "🦖 Jacob" : "🧪 Test";
   $("who").classList.add("hidden");
   $("start").classList.remove("hidden");
+  refreshLocks();
 }
 document.querySelectorAll("#who .pbtn").forEach(b=> b.onclick=()=>pickPlayer(b.getAttribute("data-v")));
 $("change-player").onclick=()=>{ $("start").classList.add("hidden"); $("who").classList.remove("hidden"); };
