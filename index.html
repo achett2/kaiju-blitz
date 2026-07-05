@@ -896,12 +896,12 @@ function logResult(acc, pace){
   const note=$("save-note");
   if(player==="test"){ note.textContent="🧪 Test run — not saved."; return; }
   if(!CONFIG.logResults){ note.textContent="Saving turned off."; return; }
-  const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":op==="mul"?"mult":op==="div"?"division":"mixed";
+  const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":op==="mul"?"mult":op==="div"?"division":op==="skip"?"skip-counting":"mixed";
   const payload={
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: ["round","mul","div"].indexOf(op)>=0 ? `${opLabel}, ${duration}s` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: ["round","mul","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
