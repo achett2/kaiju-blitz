@@ -924,10 +924,17 @@ function endDuel(win){
 function endGame(win){
   inputLocked=false; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
-  $("mysterybox").classList.add("hidden");
+  $("mysterybox").classList.add("hidden"); $("skip-progress").classList.add("hidden");
   if(op==="skip"){ $("e-big").textContent = win ? "⚙️💥" : "🦖💀"; $("e-title").textContent = win ? "VILLAIN DESTROYED!" : "THE VILLAIN WON…"; }
   else { $("e-big").textContent="🦖💥"; $("e-title").textContent="RAMPAGE OVER!"; }
-  if(op==="skip" && win && player==="jacob" && boss && boss.name==="Primal Wraith" && SkipGate.wraithWins()>=SKIP_MYSTERY && !Coins.isOwned("gunner")) awardMysteryBox();
+  const gotBox = op==="skip" && win && player==="jacob" && boss && boss.name==="Primal Wraith" && SkipGate.wraithWins()>=SKIP_MYSTERY && !Coins.isOwned("gunner");
+  if(gotBox) awardMysteryBox();
+  if(op==="skip" && !gotBox){
+    const left = Math.max(0, SKIP_MYSTERY - SkipGate.wraithWins());
+    const sp=$("skip-progress");
+    if(left>0){ sp.textContent = "⚔️ Defeat the Primal Wraith "+left+" more time"+(left===1?"":"s")+" to proceed…"; sp.classList.remove("hidden"); }
+    else sp.classList.add("hidden");
+  }
   const solvedQ = qlog.length, firstTryQ = qlog.filter(x=>x.wrong===0).length;
   const acc = solvedQ ? Math.round(100*firstTryQ/solvedQ) : 0;
   const pace = correct ? Math.round((totalSolveMs/1000/correct)*10)/10 : null;
