@@ -908,6 +908,7 @@ function villainStrike(){
 function endDuel(win){
   duelOver=true; inputLocked=true;
   SkipGate.inc();
+  if(win && boss && boss.name==="Primal Wraith") SkipGate.incWraithWin();
   const r=$("rival");
   if(win){ r.innerHTML='<div style="font-size:60px;text-align:center;">💥</div>'; bossesDefeated++; score+=80; }
   setTimeout(()=>{ endGame(win); }, win?520:300);
