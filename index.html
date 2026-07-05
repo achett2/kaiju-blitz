@@ -1087,7 +1087,7 @@ function renderStore(){
     else if(lockedSuper){ act = `<span class="tag" style="color:var(--dim);font-weight:800;font-size:12px;">🔒 Locked</span>`;
       sub = `🔒 Master every operation first — Add ${Coins.mastery("add")}/${MASTERY_NEEDED} · Sub ${Coins.mastery("sub")}/${MASTERY_NEEDED} · Mix ${Coins.mastery("mix")}/${MASTERY_NEEDED}`; }
     else if(it.box){ act = `<span class="tag" style="color:var(--gold);font-weight:800;font-size:12px;">🎁 Mystery Box</span>`;
-      sub = `🎁 Win it from the Mystery Box — play Skip-Counting ${SKIP_MYSTERY}× (${SkipGate.plays()}/${SKIP_MYSTERY})`; }
+      sub = `🎁 Beat the Primal Wraith ${SKIP_MYSTERY}× to earn his Mystery Box (${SkipGate.wraithWins()}/${SKIP_MYSTERY})`; }
     else act = `<button class="buy ${afford?"":"dis"}" ${afford?`data-buy="${it.id}" data-price="${it.price}"`:""}>Buy · ☢️${it.price}</button>`;
     return `<div class="store-item"><div class="si-art">${it.emoji}</div>`+
            `<div class="si-info"><b>${it.name}</b><span>${sub}</span></div>`+
