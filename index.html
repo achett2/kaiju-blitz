@@ -1175,6 +1175,7 @@ const HEAD={ x:0.40, y:0.015, w:0.52, h:0.42 };  // classic head crop (fallback)
 let introRAF=0;
 function playIntro(){
   $("intro").classList.remove("hidden"); $("who").classList.add("hidden");
+  $("intro-start").classList.add("hidden");
   $("intro-skip").textContent="Skip intro ▶";
   const titleEl=$("intro-title"); titleEl.classList.remove("show");
   const scene=$("intro-scene"), cv=$("intro-canvas"), caps=$("intro-caps"); caps.innerHTML="";
