@@ -868,18 +868,19 @@ function start(){
 /* ---- skip-counting duel helpers ---- */
 function updateHeroHp(){ const f=$("herohp-fill"); if(f) f.style.width=Math.max(0,100*playerHP/SKIP_PLAYER_HP)+"%"; }
 const SKIP_VILLAINS = [
-  { name:"Megabolt",      cry:"⚙️ MEGABOLT ATTACKS! Skip-count to strike!" },
-  { name:"Primal Wraith", cry:"🦍 THE PRIMAL WRAITH RISES! Skip-count to strike!" }
+  { name:"Primal Wraith", cry:"🦍 THE PRIMAL WRAITH RISES! Skip-count to strike!",
+    intro:"POSSESSED! The manipulator has seized a noble guardian ape and twisted it into a weapon. Free it — skip-count to break the curse!" },
+  { name:"Megabolt", cry:"⚙️ MEGABOLT ATTACKS! Skip-count to strike!" }
 ];
 function spawnMegabolt(){
   phase="boss"; bossSpawnCount++;
-  const v = SKIP_VILLAINS[randInt(0, SKIP_VILLAINS.length-1)];
+  const v = SKIP_VILLAINS[SkipGate.plays() % SKIP_VILLAINS.length];   // Primal Wraith first, then alternates
   boss={ name:v.name, max:SKIP_BOSS_HP, hp:SKIP_BOSS_HP, hitModel:false, duel:true };
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
     + `<div class="bosslabel">${v.name}</div>` + bossArt(v.name);
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
-  banner(v.cry);
+  if(v.intro) takeover(v.intro, 2800); else banner(v.cry);
 }
 /* Shotgun Godzilla: stored atomic "shells" get redirected as a ×3 blast on your next hit */
 function updateShells(){ const el=$("shells"); if(!el) return;
