@@ -780,8 +780,8 @@ function tap(d){
     const dt=performance.now()-factShownAt; totalSolveMs+=dt; guessTaps=0;
     qlog.push({ q:cur.text, op:cur.kind, ans:cur.ans, sec:Math.round(dt/10)/100, wrong:curWrong, phase:phase });
     correct++; smashed=correct; combo++; bestCombo=Math.max(bestCombo,combo);
-    if(combo>=ATOMIC_STREAK) setAtomic(true);
-    if(combo>=TURBO_STREAK && !turboMode){ turboMode=true; timeBonus+=25; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); $("hero").classList.add("turbo"); banner("🔥 TURBO MODE — +25 SECONDS!"); }
+    if(op!=="skip" && combo>=ATOMIC_STREAK) setAtomic(true);
+    if(op!=="skip" && combo>=TURBO_STREAK && !turboMode){ turboMode=true; timeBonus+=25; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); $("hero").classList.add("turbo"); banner("🔥 TURBO MODE — +25 SECONDS!"); }
     score += 10 + (combo-1)*2; updateHud();
     const hero=$("hero"); hero.classList.add("stomp"); setTimeout(()=>hero.classList.remove("stomp"),140);
     if(phase==="city"){
