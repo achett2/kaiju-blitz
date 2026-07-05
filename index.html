@@ -675,7 +675,7 @@ let cur, entry="", score=0, combo=0, bestCombo=0, smashed=0, correct=0, attempts
     phase="city", cityProgress=0, boss=null, bossSpawnCount=0, bossesDefeated=0,
     lastAnswerTs=0, bannerTimer=null, qlog=[], curWrong=0, sessionId="", atomicMode=false, timeBonus=0, turboMode=false,
     forcedNext=null, captainWarmup=false, cityTarget=NB, inputLocked=false, guessTaps=0, lastWrongAt=0, takeoverTimer=null, roundStep=0,
-    playerHP=0, duelOver=false;
+    playerHP=0, duelOver=false, shells=0;
 
 function buildSkyline(n){
   n = n || ((op==="mul"||op==="div") ? MULDIV_BUILDINGS : NB); cityTarget = n;
