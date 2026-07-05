@@ -508,7 +508,7 @@ function heroSVGAtomic(){return `
   <circle cx="86" cy="41" r="4.5" fill="#ffe066"/><circle cx="86" cy="41" r="1.8" fill="#1a1a1a"/>
 </svg>`;}
 
-function monImg(src, fb){ return '<img src="'+src+'?v=3" class="mon" alt=""'+(fb?' onerror="this.onerror=null;this.src=\''+fb+'?v=3\'"':'')+'>'; }
+function monImg(src, fb){ return '<img src="'+src+'?v=4" class="mon" alt=""'+(fb?' onerror="this.onerror=null;this.src=\''+fb+'?v=4\'"':'')+'>'; }
 function getHeroSVG(){ const h=Coins.hero();
   if(h==="atomic") return monImg("kaiju-atomic.png");
   if(h==="superman") return monImg("kaiju-superman.png","kaiju-classic.png");
@@ -1147,7 +1147,7 @@ const INTRO_FACE=new Image(); let INTRO_FACE_OK=false;
 INTRO_FACE.onload=function(){ INTRO_FACE_OK=true; };
 INTRO_FACE.onerror=function(){ INTRO_FACE_OK=false; };
 INTRO_FACE.src="kaiju-face.png?v=1";
-const INTRO_CLASSIC=new Image(); INTRO_CLASSIC.src="kaiju-classic.png?v=3";
+const INTRO_CLASSIC=new Image(); INTRO_CLASSIC.src="kaiju-classic.png?v=4";
 const INTRO_WORDS=[
   [200,"Ripped from his world by an unknown manipulator,"],
   [2100,"Godzilla awakens in a broken dimension on the edge of collapse."],
