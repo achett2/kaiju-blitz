@@ -427,6 +427,8 @@ function seg(id, set){
 const SkipGate = {
   plays(){ try{ return +localStorage.getItem("kb_skip_plays")||0; }catch(e){ return 0; } },
   inc(){ try{ localStorage.setItem("kb_skip_plays", this.plays()+1); }catch(e){} },
+  wraithWins(){ try{ return +localStorage.getItem("kb_wraith_wins")||0; }catch(e){ return 0; } },
+  incWraithWin(){ try{ localStorage.setItem("kb_wraith_wins", this.wraithWins()+1); }catch(e){} },
   unlocked(){ return this.plays()>=SKIP_UNLOCK; }
 };
 function refreshLocks(){
