@@ -1304,11 +1304,11 @@ function playIntro(){
   }
   introRAF=requestAnimationFrame(frame);
 }
-function enterFromIntro(){ cancelAnimationFrame(introRAF); try{ localStorage.setItem("kb_intro_seen9","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
+function enterFromIntro(){ cancelAnimationFrame(introRAF); try{ localStorage.setItem("kb_intro_seen10","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
 $("intro-skip").onclick=enterFromIntro;
 $("intro-start").onclick=playIntro;
 $("replay-intro").onclick=function(){ $("who").classList.add("hidden"); playIntro(); };
-(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen9"); }catch(e){}
+(function initIntro(){ let seen=false; try{ seen=!!localStorage.getItem("kb_intro_seen10"); }catch(e){}
   if(seen){ $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
   else { $("intro").classList.remove("hidden"); $("intro-start").classList.remove("hidden"); }   // wait for the Play Intro tap
 })();
