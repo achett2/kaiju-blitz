@@ -1172,6 +1172,15 @@ const INTRO_WORDS=[
   [3400,"Godzilla awakens in a broken dimension on the edge of collapse."],
   [6600,"Now he must fight his way through chaos to return home and restore balance."]
 ];
+// story flashes behind the words: {name, at(ms), dur(ms)}
+const INTRO_FLASH_IMGS = {};
+["flash-rift","flash-manipulator","flash-broken","flash-chaos"].forEach(function(n){ const im=new Image(); im.src=n+".jpg?v=1"; INTRO_FLASH_IMGS[n]=im; });
+const INTRO_FLASH=[
+  { name:"flash-rift",        at:700,  dur:600 },
+  { name:"flash-manipulator", at:2200, dur:600 },
+  { name:"flash-broken",      at:4300, dur:640 },
+  { name:"flash-chaos",       at:7000, dur:700 }
+];
 const HEAD={ x:0.40, y:0.015, w:0.52, h:0.42 };  // classic head crop (fallback)
 let introRAF=0;
 function playIntro(){
