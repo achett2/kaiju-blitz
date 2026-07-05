@@ -375,6 +375,13 @@ const ROUND_PLAYLIST = [
 const GUESS_WINDOW = 800;     // ms; wrong answers faster than this count as rapid guessing
 const GUESS_LIMIT = 4;        // rapid wrongs in a row that trigger the guessing penalty
 const GUESS_PENALTY = 3;      // seconds deducted for guessing
+// Skip-counting duel (untimed, health bars) vs the robot villain "Megabolt"
+const SKIP_STEPS = [2,3,4,5,6,7,8,9,10];
+const SKIP_BOSS_HP = 100;     // Megabolt's health
+const SKIP_PLAYER_HP = 100;   // Jacob's health
+const SKIP_HIT = 12;          // base damage per correct answer (+ streak bonus)
+const SKIP_STRIKE = 18;       // damage Megabolt deals on a wrong answer
+const SKIP_UNLOCK = 20;       // skip-counting games needed to unlock Mult/Div
 const ATTACK_INTERVAL = 6;    // seconds before a boss roar breaks your streak
 const ATOMIC_STREAK = 5;      // correct-in-a-row to trigger Atomic Mode (+15 seconds)
 const MASTERY_SEC = 5;        // a "mastery round" must average under this many sec/correct
