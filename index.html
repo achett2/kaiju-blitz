@@ -801,12 +801,12 @@ function tap(d){
       smashNext(); cityProgress++;
       if(cityProgress>=cityTarget) cityCleared();
     } else if(boss && boss.duel){
-      const dmg = SKIP_HIT + Math.min(combo,8)*2;   // streak makes hits stronger
+      let dmg = applyShell(SKIP_HIT + Math.min(combo,8)*2);   // streak makes hits stronger
       boss.hp-=dmg; fireBeam(); hitRival(); showDamage(dmg);
       if(boss.hp<=0){ updateBossHp(); endDuel(true); return; }
       updateBossHp();
     } else {
-      let dmg = boss.hitModel ? 1 : computeDamage(dt/1000, combo);
+      let dmg = boss.hitModel ? 1 : applyShell(computeDamage(dt/1000, combo));
       boss.hp-=dmg; fireBeam(); hitRival(); if(!boss.hitModel) showDamage(dmg); lastAnswerTs=performance.now();
       if(boss.hp<=0) defeatBoss(); else updateBossHp();
     }
