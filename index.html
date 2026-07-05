@@ -86,6 +86,14 @@
   .bosshp>div{height:100%; background:linear-gradient(90deg,#ff5577,#c92a2a); width:100%; transition:width .18s;}
   .bosscharge{position:absolute; top:8px; left:6px; right:6px; height:4px; background:#1c2b24; border-radius:4px; overflow:hidden;}
   .bosscharge>div{height:100%; background:var(--fire); width:0%;}
+  .herohp{position:absolute; left:8px; bottom:8px; width:44%; height:12px; background:#0c2417; border:2px solid #08090a; border-radius:6px; overflow:hidden; z-index:6;}
+  .herohp>div{height:100%; width:100%; background:linear-gradient(90deg,#39d98a,#1f9d57); transition:width .18s;}
+  .herohp .hplabel{position:absolute; left:6px; top:-1px; font:800 9px 'Barlow Condensed',sans-serif; color:#eafff0; letter-spacing:1px;}
+  .scene.struck{animation:struck .34s;}
+  @keyframes struck{0%,100%{filter:none}25%{filter:brightness(1.5) sepia(1) hue-rotate(-30deg) saturate(4)}60%{filter:none}}
+  .lock-note{margin-top:6px; text-align:center; font:800 12px 'Barlow Condensed',sans-serif; color:var(--gold); letter-spacing:.5px;}
+  #op button.locked{opacity:.5; position:relative;}
+  #op button.locked::after{content:"🔒"; position:absolute; top:-6px; right:-2px; font-size:11px;}
   .bosslabel{position:absolute; top:-20px; left:-30px; right:-30px; text-align:center; font-weight:800; font-size:11px; color:#ffb3c1; letter-spacing:.03em;}
   .dmg{position:absolute; font-family:"Baloo 2"; font-weight:800; color:var(--gold); font-size:22px; pointer-events:none;
        text-shadow:0 0 8px rgba(0,0,0,.7); z-index:4; animation:floatup .7s forwards;}
