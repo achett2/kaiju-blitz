@@ -663,12 +663,11 @@ function nextRound(){
 }
 function nextSkip(){
   const step=SKIP_STEPS[randInt(0,SKIP_STEPS.length-1)];
-  const startMult=randInt(1,4);                 // start at step×1..4
-  const seq=[]; for(let i=0;i<5;i++) seq.push(step*(startMult+i));
-  const blank=randInt(1,4);                      // hide a term (never the first)
+  const seq=[]; for(let i=1;i<=5;i++) seq.push(step*i);   // always the full sequence: step, 2×, 3×…
+  const blank=randInt(1,4);                                // hide a term (never the first)
   const ans=seq[blank];
   const shown=seq.map((n,i)=> i===blank ? "__" : n).join(", ");
-  return {text:shown, ans:ans, kind:"skip", hint:"Count by "+step+"s — fill in the blank"};
+  return {text:shown, ans:ans, kind:"skip", hint:"Count by "+step+"s"};
 }
 function nextFact(){
   if(op==="skip") return nextSkip();
