@@ -853,14 +853,19 @@ function start(){
 
 /* ---- skip-counting duel helpers ---- */
 function updateHeroHp(){ const f=$("herohp-fill"); if(f) f.style.width=Math.max(0,100*playerHP/SKIP_PLAYER_HP)+"%"; }
+const SKIP_VILLAINS = [
+  { name:"Megabolt",      cry:"⚙️ MEGABOLT ATTACKS! Skip-count to strike!" },
+  { name:"Primal Wraith", cry:"🦍 THE PRIMAL WRAITH RISES! Skip-count to strike!" }
+];
 function spawnMegabolt(){
   phase="boss"; bossSpawnCount++;
-  boss={ name:"Megabolt", max:SKIP_BOSS_HP, hp:SKIP_BOSS_HP, hitModel:false, duel:true };
+  const v = SKIP_VILLAINS[randInt(0, SKIP_VILLAINS.length-1)];
+  boss={ name:v.name, max:SKIP_BOSS_HP, hp:SKIP_BOSS_HP, hitModel:false, duel:true };
   const r=$("rival");
   r.innerHTML = `<div class="bosshp"><div id="bosshp-fill"></div></div>`
-    + `<div class="bosslabel">Megabolt</div>` + bossArt("Megabolt");
+    + `<div class="bosslabel">${v.name}</div>` + bossArt(v.name);
   r.classList.remove("hidden","roar"); r.classList.remove("rise"); void r.offsetWidth; r.classList.add("rise");
-  banner("⚙️ MEGABOLT ATTACKS! Skip-count to strike!");
+  banner(v.cry);
 }
 function villainStrike(){
   playerHP=Math.max(0, playerHP-SKIP_STRIKE); updateHeroHp();
