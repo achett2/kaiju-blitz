@@ -1321,13 +1321,11 @@ function playIntro(){
       if(faceLight>0.001) drawFace(1-faceLight, img, m);
       eL=mapPt(C.el[0],C.el[1],img,m); eR=mapPt(C.er[0],C.er[1],img,m); mo=mapPt(C.mo[0],C.mo[1],img,m);
     }
-    // PHASE 1 — words flash across the black
+    // PHASE 1 — narration text shown BELOW the image box (DOM caption), story images flash inside the box
     if(t<EYES_AT){
       let wi=-1; for(let i=0;i<INTRO_WORDS.length;i++){ if(t>=INTRO_WORDS[i][0]) wi=i; }
-      if(wi>=0){ const local=t-INTRO_WORDS[wi][0], dur=3000; let a=0, sc=1;
-        if(local<130){ a=local/130; sc=0.82+0.18*a; } else if(local>dur-220){ a=Math.max(0,(dur-local)/220); sc=1+(1-a)*0.05; } else a=1;
-        if(local<=dur) drawWord(INTRO_WORDS[wi][1], a, sc); }
-    }
+      if(wi!==capShown){ capShown=wi; caps.innerHTML = wi>=0 ? '<div class="intro-cap show">'+INTRO_WORDS[wi][1]+'</div>' : ''; }
+    } else if(capShown!==-1){ capShown=-1; caps.innerHTML=''; }
     // PHASE 2 — two blue eyes glow in the dark, then stay through the reveal
     const eyeA=clamp((t-EYES_AT)/700,0,1)*(0.75+0.25*Math.sin(t*0.01))*(1-0.55*faceLight);
     if(eyeA>0.02){ const er=H*0.075*(1+0.05*Math.sin(t*0.02)); slitEye(eL.x,eL.y,er,eyeA); slitEye(eR.x,eR.y,er,eyeA); }
