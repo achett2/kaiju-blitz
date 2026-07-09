@@ -1330,7 +1330,7 @@ function playIntro(){
     ctx.restore();
     ctx.restore();
     if(flashA>0){ ctx.fillStyle="rgba(228,251,255,"+(flashA*0.94)+")"; ctx.fillRect(0,0,W,H); }
-    if(!audioStarted && t>=EYES_AT){ audioStarted=true; const au=$("intro-audio"); if(au){ try{ au.muted=false; au.currentTime=0; au.volume=1; au.play(); }catch(e){} } }
+    if(!audioStarted && t>=EYES_AT){ audioStarted=true; const au=$("intro-audio"); if(au){ try{ au.muted=false; au.currentTime=0; au.volume=1; au.ontimeupdate=function(){ if(au.currentTime>=9) au.currentTime=0; }; au.play(); }catch(e){} } }
     if(!titled && t>=TITLE_AT){ titled=true; titleEl.classList.add("show"); }
     if(t>=END_AT) $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶";
     introRAF=requestAnimationFrame(frame);
