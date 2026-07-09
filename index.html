@@ -1337,7 +1337,7 @@ function playIntro(){
   }
   introRAF=requestAnimationFrame(frame);
 }
-function stopIntroAudio(){ const au=$("intro-audio"); if(!au) return; let v=au.volume;
+function stopIntroAudio(){ const au=$("intro-audio"); if(!au) return; au.ontimeupdate=null; let v=au.volume;
   const id=setInterval(()=>{ v-=0.12; if(v<=0){ try{ au.pause(); au.currentTime=0; }catch(e){} au.volume=1; clearInterval(id); } else au.volume=Math.max(0,v); }, 60); }
 function enterFromIntro(){ cancelAnimationFrame(introRAF); stopIntroAudio(); try{ localStorage.setItem("kb_intro_seen13","1"); }catch(e){} $("intro").classList.add("hidden"); $("who").classList.remove("hidden"); }
 $("intro-skip").onclick=enterFromIntro;
