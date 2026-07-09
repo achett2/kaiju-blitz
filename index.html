@@ -1338,9 +1338,10 @@ function playIntro(){
     ctx.save(); ctx.globalCompositeOperation="lighter"; ctx.lineCap="round";
     for(let i=beamP.length-1;i>=0;i--){ const p=beamP[i]; p.x+=p.vx; p.y+=p.vy; p.vx*=1.04; p.vy*=1.04; p.life-=0.04; if(p.life<=0){ beamP.splice(i,1); continue; } const L=Math.max(0,p.life); ctx.strokeStyle="rgba(215,250,255,"+L+")"; ctx.lineWidth=(1+2.4*L)*dpr; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x-p.vx*2.2,p.y-p.vy*2.2); ctx.stroke(); }
     ctx.restore();
+    renderFlashes(INTRO_FLASH_END, t);   // closing montage (over the face)
     ctx.restore();
     if(flashA>0){ ctx.fillStyle="rgba(228,251,255,"+(flashA*0.94)+")"; ctx.fillRect(0,0,W,H); }
-    if(!audioStarted && t>=EYES_AT){ audioStarted=true; const au=$("intro-audio"); if(au){ try{ au.muted=false; au.currentTime=0; au.volume=1; au.ontimeupdate=function(){ if(au.currentTime>=9) au.currentTime=0; }; au.play(); }catch(e){} } }
+    if(!audioStarted && t>=EYES_AT){ audioStarted=true; const au=$("intro-audio"); if(au){ try{ au.muted=false; au.currentTime=0; au.volume=1; au.play(); clearInterval(introLoopTimer); introLoopTimer=setInterval(function(){ if(au.currentTime>=9) au.currentTime=0; }, 40); }catch(e){} } }
     if(!titled && t>=TITLE_AT){ titled=true; titleEl.classList.add("show"); }
     if(t>=END_AT) $("intro-skip").textContent="⚔️ ENTER THE BLITZ ▶";
     introRAF=requestAnimationFrame(frame);
