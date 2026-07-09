@@ -1321,10 +1321,13 @@ function playIntro(){
       if(faceLight>0.001) drawFace(1-faceLight, img, m);
       eL=mapPt(C.el[0],C.el[1],img,m); eR=mapPt(C.er[0],C.er[1],img,m); mo=mapPt(C.mo[0],C.mo[1],img,m);
     }
-    // PHASE 1 — narration text shown BELOW the image box (DOM caption), story images flash inside the box
+    // PHASE 1 — narration STACKS up below the image box (each line stays), images flash inside the box
     if(t<EYES_AT){
       let wi=-1; for(let i=0;i<INTRO_WORDS.length;i++){ if(t>=INTRO_WORDS[i][0]) wi=i; }
-      if(wi!==capShown){ capShown=wi; caps.innerHTML = wi>=0 ? '<div class="intro-cap show">'+INTRO_WORDS[wi][1]+'</div>' : ''; }
+      if(wi>capShown){
+        for(let i=Math.max(0,capShown+1); i<=wi; i++){ const d=document.createElement("div"); d.className="intro-cap"; d.textContent=INTRO_WORDS[i][1]; caps.appendChild(d); void d.offsetWidth; d.classList.add("show"); }
+        capShown=wi;
+      }
     } else if(capShown!==-1){ capShown=-1; caps.innerHTML=''; }
     // PHASE 2 — two blue eyes glow in the dark, then stay through the reveal
     const eyeA=clamp((t-EYES_AT)/700,0,1)*(0.75+0.25*Math.sin(t*0.01))*(1-0.55*faceLight);
