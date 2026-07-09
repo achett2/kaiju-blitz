@@ -1181,6 +1181,14 @@ const INTRO_FLASH=[
   { name:"flash-broken",      at:4600, dur:1300 },
   { name:"flash-chaos",       at:7000, dur:1400 }
 ];
+// closing montage — the same panels flash again after the title
+const INTRO_FLASH_END=[
+  { name:"flash-rift",        at:16300, dur:900 },
+  { name:"flash-manipulator", at:17200, dur:900 },
+  { name:"flash-broken",      at:18100, dur:900 },
+  { name:"flash-chaos",       at:19000, dur:1100 }
+];
+let introLoopTimer=null;
 const HEAD={ x:0.40, y:0.015, w:0.52, h:0.42 };  // classic head crop (fallback)
 let introRAF=0;
 function playIntro(){
