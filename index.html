@@ -440,6 +440,19 @@ const SkipGate = {
   setIntroSeen(){ try{ localStorage.setItem("kb_wraith_intro","1"); }catch(e){} },
   unlocked(){ return this.plays()>=SKIP_UNLOCK; }
 };
+/* Daily challenge: play Add, Sub, Round & Skip 8× each in one day → Superman mystery box (per device). */
+const DailyGate = {
+  GOAL: 8, OPS: ["add","sub","round","skip"],
+  _load(){ let o=null; try{ o=JSON.parse(localStorage.getItem("kb_daily")||"null"); }catch(e){}
+    const today=Coins.todayStr();
+    if(!o || o.d!==today || !o.counts) o={ d:today, counts:{add:0,sub:0,round:0,skip:0} };
+    return o; },
+  _save(o){ try{ localStorage.setItem("kb_daily", JSON.stringify(o)); }catch(e){} },
+  record(op){ if(this.OPS.indexOf(op)<0) return; const o=this._load(); o.counts[op]=(o.counts[op]||0)+1; this._save(o); },
+  counts(){ return this._load().counts; },
+  left(op){ return Math.max(0, this.GOAL-(this.counts()[op]||0)); },
+  complete(){ const c=this._load().counts; return this.OPS.every(k=>(c[k]||0)>=this.GOAL); }
+};
 function refreshLocks(){
   const locked=!SkipGate.unlocked();
   $("op").querySelectorAll('button[data-v="mul"],button[data-v="div"]').forEach(b=>b.classList.toggle("locked", locked));
