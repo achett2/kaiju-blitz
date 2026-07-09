@@ -1251,6 +1251,23 @@ function playIntro(){
     for(let i=0;i<lines.length;i++){ const yy=y0+i*lh; ctx.strokeText(lines[i],0,yy); ctx.fillText(lines[i],0,yy); }
     ctx.restore();
   }
+  function renderFlashes(arr, t){
+    for(let fi=0; fi<arr.length; fi++){
+      const f=arr[fi], local=t-f.at;
+      if(local>=0 && local<=f.dur){
+        const fimg=INTRO_FLASH_IMGS[f.name];
+        if(fimg && fimg.complete && fimg.naturalWidth){
+          const fin=140, fout=180; let fa;
+          if(local<fin) fa=local/fin; else if(local>f.dur-fout) fa=Math.max(0,(f.dur-local)/fout); else fa=1;
+          const iw=fimg.naturalWidth, ih=fimg.naturalHeight, des=W/H;
+          let sw=iw, sh=ih; if(iw/ih>des) sw=ih*des; else sh=iw/des;   // cover-fit
+          const z=1.0+0.12*(local/f.dur); sw/=z; sh/=z;
+          ctx.save(); ctx.globalAlpha=fa; ctx.drawImage(fimg,(iw-sw)/2,(ih-sh)/2,sw,sh,0,0,W,H); ctx.restore();
+          if(local<130){ ctx.save(); ctx.globalCompositeOperation="lighter"; ctx.fillStyle="rgba(235,245,255,"+(0.55*(1-local/130))+")"; ctx.fillRect(0,0,W,H); ctx.restore(); }
+        }
+      }
+    }
+  }
   function frame(now){
     if($("intro").classList.contains("hidden")) return;
     const t=now-t0;
