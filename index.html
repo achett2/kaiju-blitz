@@ -1019,6 +1019,7 @@ const Coins = {
   buy(id, price){ if(this.isOwned(id) || this._s.coins<price) return false; if(id==="superman" && !this.masteryComplete()) return false; this._s.coins-=price; this._s.owned.push(id); this._s.hero=id; this.saveCache(); this._post({action:"buy", student:CONFIG.student, item:id, price:price}); return true; },
   addEarned(n){ this._s.coins+=n; this.saveCache(); },   /* server credits the same amount via the session POST */
   grant(id){ if(this._s.owned.indexOf(id)<0) this._s.owned.push(id); this._s.hero=id; this.saveCache(); this._post({action:"buy", student:CONFIG.student, item:id, price:0}); },
+  grantBox(id){ this._addBoxSkin(id); if(this._s.owned.indexOf(id)<0) this._s.owned.push(id); this._s.hero=id; this.saveCache(); this._post({action:"buy", student:CONFIG.student, item:id, price:0}); },
   bests(){ return this.ls("kb_bests", {}); },
   todayStr(){ return new Date().toLocaleDateString("en-US", { timeZone:"America/Chicago" }); },
   refresh(){
