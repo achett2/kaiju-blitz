@@ -913,6 +913,12 @@ function applyShell(dmg){
   if(Coins.hero()==="gunner" && shells>0){ shells--; updateShells(); banner("💥 REDIRECTED ATOMIC BLAST! ×3"); return dmg*3; }
   return dmg;
 }
+function awardSupermanBox(){
+  Coins.grantBox("superman"); updateCoinUI(); $("hero").innerHTML=getHeroSVG();
+  const el=$("mysterybox");
+  el.innerHTML = "<b>🎁 DAILY MYSTERY BOX!</b>You played Add, Sub, Round & Skip 8× today — you unlock <b style='display:inline;font-size:16px;'>🦸🦖 Superman Godzilla</b>! Equipped.";
+  el.classList.remove("hidden");
+}
 function awardMysteryBox(){
   Coins.grant("gunner"); updateCoinUI();
   $("hero").innerHTML=getHeroSVG();
