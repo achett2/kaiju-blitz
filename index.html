@@ -950,6 +950,16 @@ function endGame(win){
     if(left>0){ sp.textContent = "⚔️ Defeat the Primal Wraith "+left+" more time"+(left===1?"":"s")+" to proceed…"; sp.classList.remove("hidden"); }
     else sp.classList.add("hidden");
   }
+  // Daily challenge: Add/Sub/Round/Skip 8× each today → Superman mystery box
+  if(player==="jacob") DailyGate.record(op);
+  const gotSuper = player==="jacob" && !gotBox && DailyGate.complete() && !Coins.isOwned("superman");
+  if(gotSuper) awardSupermanBox();
+  $("daily-progress").classList.add("hidden");
+  if(player==="jacob" && !gotSuper && !Coins.isOwned("superman")){
+    const c=DailyGate.counts(), dp=$("daily-progress");
+    dp.innerHTML = "🦸 <b>Superman box (today):</b> Add "+Math.min(c.add,8)+"/8 · Sub "+Math.min(c.sub,8)+"/8 · Round "+Math.min(c.round,8)+"/8 · Skip "+Math.min(c.skip,8)+"/8";
+    dp.classList.remove("hidden");
+  }
   const solvedQ = qlog.length, firstTryQ = qlog.filter(x=>x.wrong===0).length;
   const acc = solvedQ ? Math.round(100*firstTryQ/solvedQ) : 0;
   const pace = correct ? Math.round((totalSolveMs/1000/correct)*10)/10 : null;
