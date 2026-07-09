@@ -1137,7 +1137,7 @@ function renderStore(){
     if(equipped) act = `<span class="tag eq">✓ Equipped</span>`;
     else if(owned) act = `<button class="buy" data-eq="${it.id}">Equip</button>`;
     else if(lockedSuper){ act = `<span class="tag" style="color:var(--dim);font-weight:800;font-size:12px;">🔒 Locked</span>`;
-      sub = `🔒 Master every operation first — Add ${Coins.mastery("add")}/${MASTERY_NEEDED} · Sub ${Coins.mastery("sub")}/${MASTERY_NEEDED} · Mix ${Coins.mastery("mix")}/${MASTERY_NEEDED}`; }
+      sub = `🔒 Master Add ${Coins.mastery("add")}/${MASTERY_NEEDED} · Sub ${Coins.mastery("sub")}/${MASTERY_NEEDED} · Mix ${Coins.mastery("mix")}/${MASTERY_NEEDED} — or win the Mystery Box by playing Add, Sub, Round & Skip ${DailyGate.GOAL}× each in one day`; }
     else if(it.box){ act = `<span class="tag" style="color:var(--gold);font-weight:800;font-size:12px;">🎁 Mystery Box</span>`;
       sub = `🎁 Beat the Primal Wraith ${SKIP_MYSTERY}× to earn his Mystery Box (${SkipGate.wraithWins()}/${SKIP_MYSTERY})`; }
     else act = `<button class="buy ${afford?"":"dis"}" ${afford?`data-buy="${it.id}" data-price="${it.price}"`:""}>Buy · ☢️${it.price}</button>`;
