@@ -999,7 +999,10 @@ const Coins = {
   _s: { coins:0, owned:[], hero:"classic", mastery:{add:0,sub:0,mix:0} },
   ls(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
-  loadCache(){ const c=this.ls("kb_state",null); if(c){ this._s.coins=+c.coins||0; this._s.owned=c.owned||[]; this._s.hero=c.hero||"classic"; if(c.mastery) this._s.mastery=Object.assign({add:0,sub:0,mix:0}, c.mastery); } },
+  loadCache(){ const c=this.ls("kb_state",null); if(c){ this._s.coins=+c.coins||0; this._s.owned=c.owned||[]; this._s.hero=c.hero||"classic"; if(c.mastery) this._s.mastery=Object.assign({add:0,sub:0,mix:0}, c.mastery); } this._mergeBox(); },
+  _boxSkins(){ return this.ls("kb_box_skins", []); },
+  _addBoxSkin(id){ const a=this._boxSkins(); if(a.indexOf(id)<0){ a.push(id); this.set("kb_box_skins", a); } },
+  _mergeBox(){ this._boxSkins().forEach(id=>{ if(this._s.owned.indexOf(id)<0) this._s.owned.push(id); }); },   /* box-won skins persist even if the Sheet doesn't know them */
   saveCache(){ this.set("kb_state", this._s); },
   balance(){ return this._s.coins; },
   owned(){ return this._s.owned; },
