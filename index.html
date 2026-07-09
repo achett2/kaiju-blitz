@@ -1247,7 +1247,7 @@ function playIntro(){
   const ctx=cv.getContext("2d"), DIAG=Math.hypot(W,H);
   const oc=document.createElement("canvas"), octx=oc.getContext("2d");
   let chargeP=[], beamP=[], titled=false, audioStarted=false, capShown=-2;
-  const EYES_AT=9800, FACE_AT=12100, CHARGE_AT=13700, FIRE_AT=14900, FLASH_PEAK=15220, TITLE_AT=15550, END_AT=20400;
+  const EYES_AT=9800, FACE_AT=12100, CHARGE_AT=13700, FIRE_AT=14900, FLASH_PEAK=15220, TITLE_AT=15550, END_AT=20400, HOLD_FLASH_AT=20200;
   const t0=performance.now();
   cancelAnimationFrame(introRAF);
   function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
