@@ -102,6 +102,7 @@
   @keyframes skippulse{0%,100%{transform:scale(1); opacity:.9}50%{transform:scale(1.06); opacity:1}}
   .dailyprog{max-width:340px; margin:8px auto 0; padding:8px 10px; text-align:center; border:2px solid var(--gold); border-radius:10px; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:13px; letter-spacing:.5px; color:var(--gold);}
   .dailyprog b{color:#eafff0;}
+  #buildtag{position:fixed; right:5px; bottom:3px; z-index:200; font:700 9px 'Barlow Condensed',sans-serif; letter-spacing:.5px; color:rgba(143,179,156,.55); pointer-events:none;}
   .bosslabel{position:absolute; top:-20px; left:-30px; right:-30px; text-align:center; font-weight:800; font-size:11px; color:#ffb3c1; letter-spacing:.03em;}
   .dmg{position:absolute; font-family:"Baloo 2"; font-weight:800; color:var(--gold); font-size:22px; pointer-events:none;
        text-shadow:0 0 8px rgba(0,0,0,.7); z-index:4; animation:floatup .7s forwards;}
@@ -243,6 +244,7 @@
 </style>
 
 <div class="wrap">
+  <div id="buildtag"></div>
   <div id="takeover" class="takeover hidden"><div id="takeover-text"></div></div>
   <h1>🦖 KAIJU BLITZ</h1>
   <div class="coinchip" id="coinchip">☢️ <span id="coin-bal">0</span></div>
@@ -1196,6 +1198,8 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
+const BUILD="v42";
+$("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
 const INTRO_FACE=new Image(); let INTRO_FACE_OK=false;
