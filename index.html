@@ -393,7 +393,8 @@ const ACTIVITY = "Math Facts — Kaiju Blitz";
 const NB = 10;                // buildings per wave
 const CAPTAIN_BUILDINGS = 4;  // shorter wave before the Captain Underpants gag
 const MULDIV_BUILDINGS = 6;   // shorter waves for the harder mult/div modes
-// Round mode is a scripted loop: entry 0 runs once, then it loops from entry 1.
+// Round mode is a scripted loop: each game starts at a random entry, then loops from entry 1
+// (entry 0, the longer opening wave, only runs if it's the random start).
 // hits = correct answers needed to defeat that boss.
 const ROUND_PLAYLIST = [
   { buildings:6, boss:"Roundor",           hits:4 },
@@ -714,7 +715,7 @@ function nextFact(){
 /* ---- state ---- */
 let cur, entry="", score=0, combo=0, bestCombo=0, smashed=0, correct=0, attempts=0,
     timeLeft=0, timer=null, buildings=[], factShownAt=0, totalSolveMs=0,
-    phase="city", cityProgress=0, boss=null, bossSpawnCount=0, bossesDefeated=0,
+    phase="city", cityProgress=0, boss=null, bossSpawnCount=0, bossOffset=0, bossesDefeated=0,
     lastAnswerTs=0, bannerTimer=null, qlog=[], curWrong=0, sessionId="", atomicMode=false, timeBonus=0, turboMode=false,
     forcedNext=null, captainWarmup=false, cityTarget=NB, inputLocked=false, guessTaps=0, lastWrongAt=0, takeoverTimer=null, roundStep=0,
     playerHP=0, duelOver=false, shells=0;
@@ -766,7 +767,7 @@ function startRoundWave(){
 function cityCleared(){
   if(op==="round"){ const e=ROUND_PLAYLIST[roundStep]; spawnBoss(e.boss, e.hits); return; }
   const roster=ROSTERS[op]||ROSTERS.add;
-  const upcoming=roster[bossSpawnCount % roster.length];
+  const upcoming=roster[(bossOffset+bossSpawnCount) % roster.length];
   if(upcoming==="Captain Underpants" && !captainWarmup){
     captainWarmup=true; cityProgress=0; buildSkyline(CAPTAIN_BUILDINGS); timeBonus+=20;
     takeover("IT SEEMS OUR VILLAIN IS RUNNING LATE!  ⏱️ +20s", 2000);
@@ -778,7 +779,7 @@ function spawnBoss(nameArg, hitsArg){
   phase="boss"; bossSpawnCount++;
   let name, hitModel=false;
   if(nameArg){ name=nameArg; hitModel=true; }        // round mode: fixed hits
-  else { const roster=ROSTERS[op]||ROSTERS.add; name=roster[(bossSpawnCount-1)%roster.length]; }
+  else { const roster=ROSTERS[op]||ROSTERS.add; name=roster[(bossOffset+bossSpawnCount-1)%roster.length]; }
   const isCaptain = name==="Captain Underpants";
   const maxHp = hitModel ? (hitsArg||4) : (isCaptain ? 1 : 90+(bossSpawnCount-1)*40);
   boss={ name, max: maxHp, hitModel }; boss.hp=boss.max;
@@ -886,7 +887,9 @@ function start(){
     return;
   }
   $("timebar").classList.remove("hidden"); $("time-stat").classList.remove("hidden"); $("herohp").classList.add("hidden");
-  roundStep=0; if(op==="round") startRoundWave(); else buildSkyline();
+  // Random starting boss each game so every villain gets screen time (HP still ramps within a game).
+  bossOffset=randInt(0, (ROSTERS[op]||ROSTERS.add).length-1);
+  roundStep=randInt(0, ROUND_PLAYLIST.length-1); if(op==="round") startRoundWave(); else buildSkyline();
   showFact();
   const startTs=Date.now(); lastAnswerTs=performance.now();
   timer=setInterval(()=>{
@@ -1206,7 +1209,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v43";
+const BUILD="v44";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
