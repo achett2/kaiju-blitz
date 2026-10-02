@@ -393,13 +393,11 @@ const ACTIVITY = "Math Facts — Kaiju Blitz";
 const NB = 10;                // buildings per wave
 const CAPTAIN_BUILDINGS = 4;  // shorter wave before the Captain Underpants gag
 const MULDIV_BUILDINGS = 6;   // shorter waves for the harder mult/div modes
-// Round mode is a scripted loop: each game starts at a random entry, then loops from entry 1
-// (entry 0, the longer opening wave, only runs if it's the random start).
+// Round mode is a scripted loop: each game starts at a random entry, then cycles through all of them.
 // hits = correct answers needed to defeat that boss.
 const ROUND_PLAYLIST = [
-  { buildings:6, boss:"Roundor",           hits:4 },
-  { buildings:4, boss:"Captain Underpants", hits:1 },
   { buildings:4, boss:"Roundor",           hits:4 },
+  { buildings:4, boss:"Captain Underpants", hits:1 },
   { buildings:4, boss:"Spirolith",         hits:4 }
 ];
 const GUESS_WINDOW = 800;     // ms; wrong answers faster than this count as rapid guessing
@@ -553,7 +551,7 @@ function chargedHeroSVG(){
 
 const ROSTERS = {
   add: ["Crimson Brute","Iron Maw","Stackjaw","Tallyhorn"],
-  sub: ["Anguirus","Violet Shrieker","Minuscrab"],
+  sub: ["Anguirus","Violet Shrieker","Minuscrab","Erasor"],
   mix: ["The Alpha & Omega","Trideous","Twinvolt"],
   round: ["Roundor","Captain Underpants","Spirolith"],
   mul: ["Hydraxis","Swarmoth","Gridlock"],
@@ -586,6 +584,7 @@ function bossArt(name){
   if(name==="Fractor") return monImg("boss-fractor.png","boss-iron.png");
   if(name==="Stackjaw") return monImg("boss-stackjaw.png","boss-iron.png");
   if(name==="Tallyhorn") return monImg("boss-tallyhorn.png","boss-crimson.png");
+  if(name==="Erasor") return monImg("boss-erasor.png","boss-violet.png");
   if(name==="Minuscrab") return monImg("boss-minuscrab.png","boss-crimson.png");
   if(name==="Twinvolt") return monImg("boss-twinvolt.png","boss-trideous.png");
   if(name==="Spirolith") return monImg("boss-spirolith.png","boss-roundor.png");
@@ -817,7 +816,7 @@ function defeatBoss(){
   const r=$("rival"); r.innerHTML='<div style="font-size:60px;text-align:center;">💥</div>';
   setTimeout(()=>r.classList.add("hidden"),520);
   phase="city"; cityProgress=0;
-  if(op==="round"){ roundStep++; if(roundStep>=ROUND_PLAYLIST.length) roundStep=1; startRoundWave(); }
+  if(op==="round"){ roundStep=(roundStep+1)%ROUND_PLAYLIST.length; startRoundWave(); }
   else buildSkyline();
 }
 
@@ -1209,7 +1208,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v44";
+const BUILD="v45";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
