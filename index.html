@@ -38,6 +38,7 @@
   .opt-group .lbl{font-weight:800; color:var(--dim); font-size:13px; letter-spacing:.06em; margin-bottom:6px;}
   .seg{display:flex; gap:8px;}
   #op{flex-wrap:wrap;} #op button{flex:1 1 28%;}
+  #tables{flex-wrap:wrap;} #tables button{flex:1 1 13%; padding:10px 0;} #tables button.all{flex-basis:100%;}
   .seg button{
     flex:1; font-family:"Baloo 2"; font-weight:700; font-size:16px; padding:12px; cursor:pointer;
     border-radius:14px; border:2px solid #2c4a3b; background:#10211b; color:var(--ink);
@@ -298,6 +299,10 @@
           <button data-v="20" class="on">20</button>
         </div>
       </div>
+      <div class="opt-group hidden" id="tables-group">
+        <div class="lbl">TIMES TABLES — CLEAR EVERY FACT TO WIN</div>
+        <div class="seg" id="tables"></div>
+      </div>
       <button class="start-btn" id="go">START RAMPAGE 🔥</button>
       <button class="storebtn" id="open-store">🛒 Radiation Store</button>
       <button class="storebtn" id="open-badges">🏅 Mastery Badges</button>
@@ -409,7 +414,7 @@ const SKIP_BOSS_HP = 100;     // Megabolt's health
 const SKIP_PLAYER_HP = 100;   // Jacob's health
 const SKIP_HIT = 12;          // base damage per correct answer (+ streak bonus)
 const SKIP_STRIKE = 18;       // damage Megabolt deals on a wrong answer
-const SKIP_UNLOCK = 20;       // skip-counting games needed to unlock Mult/Div
+const SKIP_UNLOCK = 20;       // skip-counting games needed to unlock Div (Mult is always open)
 const SKIP_MYSTERY = 10;      // skip-counting games to win the Mystery Box (Shotgun Godzilla)
 const SHELL_MAX = 3;          // stored atomic "shells" the Shotgun skin can hold
 const ATTACK_INTERVAL = 6;    // seconds before a boss roar breaks your streak
@@ -460,15 +465,48 @@ const DailyGate = {
 };
 function refreshLocks(){
   const locked=!SkipGate.unlocked();
-  $("op").querySelectorAll('button[data-v="mul"],button[data-v="div"]').forEach(b=>b.classList.toggle("locked", locked));
+  $("op").querySelectorAll('button[data-v="div"]').forEach(b=>b.classList.toggle("locked", locked));
   const note=$("lock-note");
-  if(locked){ note.textContent="🔒 Mult & Div unlock after "+SKIP_UNLOCK+" Skip-Counting games ("+SkipGate.plays()+"/"+SKIP_UNLOCK+")"; note.classList.remove("hidden"); }
+  if(locked){ note.textContent="🔒 Div unlocks after "+SKIP_UNLOCK+" Skip-Counting games ("+SkipGate.plays()+"/"+SKIP_UNLOCK+")"; note.classList.remove("hidden"); }
   else note.classList.add("hidden");
 }
 seg("op", v=>{
-  if((v==="mul"||v==="div") && !SkipGate.unlocked()){ refreshLocks(); return false; }
+  if(v==="div" && !SkipGate.unlocked()){ refreshLocks(); return false; }
   op=v; $("range-group").classList.toggle("hidden", v==="round"||v==="mul"||v==="div"||v==="skip");
+  $("tables-group").classList.toggle("hidden", v!=="mul");
 }); seg("range", v=>range=+v);
+
+/* ---- Mult: pick times tables; the game runs (untimed) until every fact in them is answered right first try ---- */
+let mulTables = (function(){ try{ const t=JSON.parse(localStorage.getItem("kb_mul_tables")); if(Array.isArray(t)&&t.length) return t; }catch(e){} return [1,2,3,4,5,6,7,8,9,10,11,12]; })();
+let mulPool=[], mulTotal=0, mulRecent=[];
+function renderTables(){
+  const box=$("tables"), all=mulTables.length===12;
+  box.innerHTML = Array.from({length:12},(_,i)=>`<button data-v="${i+1}" class="${mulTables.indexOf(i+1)>=0?"on":""}">${i+1}</button>`).join("")
+    + `<button data-v="all" class="all ${all?"on":""}">${all?"✓ ALL TABLES":"ALL TABLES"}</button>`;
+  box.querySelectorAll("button").forEach(b=> b.onclick=()=>{
+    const v=b.getAttribute("data-v");
+    if(v==="all") mulTables = all ? [] : [1,2,3,4,5,6,7,8,9,10,11,12];
+    else { const n=+v, i=mulTables.indexOf(n); if(i>=0) mulTables.splice(i,1); else mulTables.push(n); mulTables.sort((a,b)=>a-b); }
+    try{ localStorage.setItem("kb_mul_tables", JSON.stringify(mulTables)); }catch(e){}
+    renderTables(); refreshLocks();   // clears any "pick a table" note
+  });
+}
+renderTables();
+// Every fact with a factor in the chosen tables (× 1–12); 3×4 and 4×3 count as one fact.
+function buildMulPool(){
+  const seen={}; mulPool=[];
+  mulTables.forEach(t=>{ for(let n=1;n<=12;n++){ const a=Math.min(t,n), b=Math.max(t,n), k=a+"x"+b; if(!seen[k]){ seen[k]=1; mulPool.push({a,b,k}); } } });
+  mulTotal=mulPool.length; mulRecent=[];
+}
+function nextMul(){
+  // avoid repeating the last few facts while there are others left
+  const fresh=mulPool.filter(f=>mulRecent.indexOf(f.k)<0), from=fresh.length?fresh:mulPool;
+  const f=from[randInt(0,from.length-1)], flip=Math.random()<0.5;
+  mulRecent.push(f.k); if(mulRecent.length>3) mulRecent.shift();
+  const x=flip?f.b:f.a, y=flip?f.a:f.b;
+  return {text:`${x} × ${y}`, ans:x*y, kind:"mul", key:f.k};
+}
+function updateMulLeft(){ $("time-left").textContent=mulPool.length; }
 
 /* ---- who's playing: dedicated first screen ---- */
 function pickPlayer(v){
@@ -704,7 +742,7 @@ function nextSkip(){
 function nextFact(){
   if(op==="skip") return nextSkip();
   if(op==="round") return nextRound();
-  if(op==="mul"){ const a=randInt(2,10), b=randInt(2,10); return {text:`${a} × ${b}`, ans:a*b, kind:"mul"}; }
+  if(op==="mul") return nextMul();
   if(op==="div"){ const d=randInt(2,10), q=randInt(2,10); return {text:`${d*q} ÷ ${d}`, ans:q, kind:"div"}; }
   let kind = op==="mix" ? (Math.random()<0.5?"add":"sub") : op;
   if(kind==="add"){ const a=randInt(1,range-1), b=randInt(1,range-a); return {text:`${a} + ${b}`, ans:a+b, kind}; }
@@ -798,7 +836,9 @@ function setAtomic(on){
   if(on===atomicMode) return;
   atomicMode = on;
   const h=$("hero");
-  if(on){ h.innerHTML=chargedHeroSVG(); h.classList.add("charged"); timeBonus+=15; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("⚡ CHARGED UP! +15 SECONDS"); }
+  if(on){ h.innerHTML=chargedHeroSVG(); h.classList.add("charged");
+    if(op==="mul") banner("⚡ CHARGED UP!");
+    else { timeBonus+=15; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("⚡ CHARGED UP! +15 SECONDS"); } }
   else { h.innerHTML=getHeroSVG(); h.classList.remove("charged","turbo"); turboMode=false; }
 }
 function hitRival(){ const r=$("rival"); r.classList.add("hit"); setTimeout(()=>r.classList.remove("hit"),180); }
@@ -830,7 +870,9 @@ function tap(d){
     if(Coins.hero()==="gunner"){
       if(combo>0 && combo%ATOMIC_STREAK===0 && shells<SHELL_MAX){ shells++; updateShells(); banner("🔫 ATOMIC SHELL STORED! ("+shells+"/"+SHELL_MAX+")"); }
     } else if(op!=="skip" && combo>=ATOMIC_STREAK) setAtomic(true);
-    if(op!=="skip" && combo>=TURBO_STREAK && !turboMode){ turboMode=true; timeBonus+=25; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); $("hero").classList.add("turbo"); banner("🔥 TURBO MODE — +25 SECONDS!"); }
+    if(op!=="skip" && combo>=TURBO_STREAK && !turboMode){ turboMode=true; $("hero").classList.add("turbo");
+      if(op==="mul") banner("🔥 TURBO MODE!");
+      else { timeBonus+=25; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("🔥 TURBO MODE — +25 SECONDS!"); } }
     score += 10 + (combo-1)*2; updateHud();
     const hero=$("hero"); hero.classList.add("stomp"); setTimeout(()=>hero.classList.remove("stomp"),140);
     if(phase==="city"){
@@ -846,6 +888,11 @@ function tap(d){
       boss.hp-=dmg; fireBeam(); hitRival(); if(!boss.hitModel) showDamage(dmg); lastAnswerTs=performance.now();
       if(boss.hp<=0) defeatBoss(); else updateBossHp();
     }
+    if(op==="mul"){
+      // first-try right clears the fact; a missed fact stays in the pool and comes back later
+      if(curWrong===0){ mulPool=mulPool.filter(f=>f.k!==cur.key); updateMulLeft(); }
+      if(!mulPool.length){ clearInterval(timer); inputLocked=true; banner("✖️ ALL "+mulTotal+" FACTS CLEARED!"); setTimeout(()=>endGame(true), 1200); return; }
+    }
     showFact();
   } else if(ansStr.startsWith(test)){
     entry=test; $("entry").textContent=entry;
@@ -857,7 +904,9 @@ function tap(d){
     const nowW=performance.now();
     guessTaps = (nowW - lastWrongAt < GUESS_WINDOW) ? guessTaps+1 : 1;
     lastWrongAt = nowW;
-    if(guessTaps>=GUESS_LIMIT){ guessTaps=0; timeBonus-=GUESS_PENALTY; takeover("🚫 NO GUESSING!  −"+GUESS_PENALTY+" SECONDS", 1100, true); }
+    if(guessTaps>=GUESS_LIMIT){ guessTaps=0;
+      if(op==="mul") takeover("🚫 NO GUESSING!  THINK IT THROUGH…", 2000, true);   // untimed: lock the pad instead
+      else { timeBonus-=GUESS_PENALTY; takeover("🚫 NO GUESSING!  −"+GUESS_PENALTY+" SECONDS", 1100, true); } }
     return;
   }
   attempts++;
@@ -866,6 +915,7 @@ $("pad").querySelectorAll("button").forEach(b=> b.onclick=()=>tap(b.textContent)
 document.addEventListener("keydown", e=>{ if(!$("game").classList.contains("hidden") && /^[0-9]$/.test(e.key)) tap(e.key); });
 
 function start(){
+  if(op==="mul" && !mulTables.length){ const n=$("lock-note"); n.textContent="✖️ Pick at least one times table first"; n.classList.remove("hidden"); return; }
   score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
   phase="city"; cityProgress=0; boss=null; bossSpawnCount=0; bossesDefeated=0; captainWarmup=false; forcedNext=null;
   inputLocked=false; guessTaps=0; lastWrongAt=0; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
@@ -886,14 +936,19 @@ function start(){
     return;
   }
   $("timebar").classList.remove("hidden"); $("time-stat").classList.remove("hidden"); $("herohp").classList.add("hidden");
+  const untimed = op==="mul";   // Mult: no clock — the game ends when every chosen fact is cleared
+  $("time-stat").querySelector("small").textContent = untimed ? "LEFT" : "SECONDS";
+  if(untimed){ timeLeft=999; buildMulPool(); updateMulLeft(); $("timebar").classList.add("hidden"); }
   // Random starting boss each game so every villain gets screen time (HP still ramps within a game).
   bossOffset=randInt(0, (ROSTERS[op]||ROSTERS.add).length-1);
   roundStep=randInt(0, ROUND_PLAYLIST.length-1); if(op==="round") startRoundWave(); else buildSkyline();
   showFact();
   const startTs=Date.now(); lastAnswerTs=performance.now();
   timer=setInterval(()=>{
-    timeLeft=Math.max(0, duration+timeBonus-(Date.now()-startTs)/1000);
-    $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/(duration+timeBonus))+"%";
+    if(!untimed){
+      timeLeft=Math.max(0, duration+timeBonus-(Date.now()-startTs)/1000);
+      $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/(duration+timeBonus))+"%";
+    }
     if(phase==="boss"){
       const since=(performance.now()-lastAnswerTs)/1000, frac=Math.min(1,since/ATTACK_INTERVAL);
       const cf=$("bosscharge-fill"); if(cf) cf.style.width=(frac*100)+"%";
@@ -962,6 +1017,7 @@ function endGame(win){
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
   $("mysterybox").classList.add("hidden"); $("skip-progress").classList.add("hidden");
   if(op==="skip"){ $("e-big").textContent = win ? "⚙️💥" : "🦖💀"; $("e-title").textContent = win ? "VILLAIN DESTROYED!" : "THE VILLAIN WON…"; }
+  else if(op==="mul"){ $("e-big").textContent="🦖✖️💥"; $("e-title").textContent="ALL "+mulTotal+" FACTS CLEARED!"; }
   else { $("e-big").textContent="🦖💥"; $("e-title").textContent="RAMPAGE OVER!"; }
   const gotBox = op==="skip" && win && player==="jacob" && boss && boss.name==="Primal Wraith" && SkipGate.wraithWins()>=SKIP_MYSTERY && !Coins.isOwned("gunner");
   if(gotBox) awardMysteryBox();
@@ -1008,7 +1064,7 @@ function logResult(acc, pace){
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: ["round","mul","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: op==="mul" ? `mult tables ${mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} facts)` : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
@@ -1208,7 +1264,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v45";
+const BUILD="v46";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
