@@ -97,6 +97,12 @@
   #op button.locked::after{content:"🔒"; position:absolute; top:-6px; right:-2px; font-size:11px;}
   .shells{position:absolute; top:8px; right:8px; z-index:6; font-size:18px; letter-spacing:2px; filter:drop-shadow(1px 1px 0 #08090a);}
   .mysterybox{max-width:320px; margin:10px auto 0; padding:12px; text-align:center; border:3px solid var(--gold); border-radius:10px; background:rgba(255,196,0,.1); font-family:'Barlow Condensed',sans-serif; font-weight:800; color:var(--ink); animation:boxpop .5s cubic-bezier(.2,1.5,.4,1);}
+  .endgame-btn{display:block; margin:10px auto 0; padding:6px 16px; font:800 13px 'Barlow Condensed',sans-serif; letter-spacing:1px; color:var(--dim); background:transparent; border:2px solid #2c4a3b; border-radius:8px; cursor:pointer;}
+  .endgame-btn.confirm{color:#fff; background:var(--fire); border-color:var(--fire);}
+  .charreq{max-width:340px; margin:10px auto 0; padding:12px; text-align:center; border:3px solid var(--gold); border-radius:10px; background:rgba(255,196,0,.1); font-family:'Barlow Condensed',sans-serif; font-weight:800; color:var(--ink);}
+  .charreq b{font-family:'Bangers',cursive; font-size:20px; color:var(--gold); letter-spacing:1px; display:block; margin-bottom:4px;}
+  .charreq textarea{width:100%; box-sizing:border-box; margin:8px 0; padding:8px; font:600 16px 'Barlow Condensed',sans-serif; color:var(--ink); background:#10211b; border:2px solid #2c4a3b; border-radius:8px; resize:vertical;}
+  .charreq .storebtn{width:100%; margin-top:0;}
   .mysterybox b{font-family:'Bangers',cursive; font-size:20px; color:var(--gold); letter-spacing:1px; display:block; margin-bottom:4px;}
   @keyframes boxpop{0%{transform:scale(.4); opacity:0}100%{transform:scale(1); opacity:1}}
   .skipprog{max-width:340px; margin:10px auto 0; padding:10px; text-align:center; border:3px dashed var(--fire); border-radius:10px; font-family:'Bangers',cursive; font-size:20px; letter-spacing:1px; color:var(--fire); text-shadow:2px 2px 0 #08090a; animation:skippulse .9s ease-in-out infinite;}
@@ -341,6 +347,7 @@
       <button>7</button><button>8</button><button>9</button>
       <button class="zero">0</button>
     </div>
+    <button class="endgame-btn hidden" id="endgame-btn">⏹ END GAME</button>
   </div>
 
   <!-- END -->
@@ -348,6 +355,13 @@
     <div class="big" id="e-big">🦖💥</div>
     <h2 id="e-title">RAMPAGE OVER!</h2>
     <p class="newbest hidden" id="newbest">🏆 NEW BEST!</p>
+    <div class="charreq hidden" id="charreq">
+      <b>🎨 RECORD REWARD: CREATE A CHARACTER!</b>
+      Describe a hero or villain you want added to Kaiju Blitz:
+      <textarea id="charreq-text" rows="3" maxlength="300" placeholder="Example: a lava shark with rocket fins that shoots fireballs"></textarea>
+      <button class="storebtn" id="charreq-send">SEND MY CHARACTER ✉️</button>
+      <div id="charreq-note"></div>
+    </div>
     <p class="streakline" id="streakline"></p>
     <div class="grid">
       <div class="tile"><b id="e-correct">0</b><span>BLOCKS SMASHED</span></div>
@@ -507,6 +521,14 @@ function nextMul(){
   return {text:`${x} × ${y}`, ans:x*y, kind:"mul", key:f.k};
 }
 function updateMulLeft(){ $("time-left").textContent=mulPool.length; }
+// End Game (Mult only): first tap arms it, second tap within 3s ends the run
+let endArmTimer=null;
+function resetEndGameBtn(){ clearTimeout(endArmTimer); const b=$("endgame-btn"); b.classList.remove("confirm"); b.textContent="⏹ END GAME"; }
+$("endgame-btn").onclick=()=>{
+  const b=$("endgame-btn");
+  if(!b.classList.contains("confirm")){ b.classList.add("confirm"); b.textContent="TAP AGAIN TO END"; clearTimeout(endArmTimer); endArmTimer=setTimeout(resetEndGameBtn, 3000); return; }
+  resetEndGameBtn(); clearInterval(timer); endGame(false);
+};
 
 /* ---- who's playing: dedicated first screen ---- */
 function pickPlayer(v){
@@ -916,6 +938,7 @@ document.addEventListener("keydown", e=>{ if(!$("game").classList.contains("hidd
 
 function start(){
   if(op==="mul" && !mulTables.length){ const n=$("lock-note"); n.textContent="✖️ Pick at least one times table first"; n.classList.remove("hidden"); return; }
+  resetEndGameBtn(); $("endgame-btn").classList.toggle("hidden", op!=="mul");   // untimed Mult needs a way out
   score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
   phase="city"; cityProgress=0; boss=null; bossSpawnCount=0; bossesDefeated=0; captainWarmup=false; forcedNext=null;
   inputLocked=false; guessTaps=0; lastWrongAt=0; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
@@ -1017,7 +1040,7 @@ function endGame(win){
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
   $("mysterybox").classList.add("hidden"); $("skip-progress").classList.add("hidden");
   if(op==="skip"){ $("e-big").textContent = win ? "⚙️💥" : "🦖💀"; $("e-title").textContent = win ? "VILLAIN DESTROYED!" : "THE VILLAIN WON…"; }
-  else if(op==="mul"){ $("e-big").textContent="🦖✖️💥"; $("e-title").textContent="ALL "+mulTotal+" FACTS CLEARED!"; }
+  else if(op==="mul"){ $("e-big").textContent = win ? "🦖✖️💥" : "🦖⏸️"; $("e-title").textContent = win ? "ALL "+mulTotal+" FACTS CLEARED!" : "STOPPED — "+mulPool.length+" OF "+mulTotal+" FACTS LEFT"; }
   else { $("e-big").textContent="🦖💥"; $("e-title").textContent="RAMPAGE OVER!"; }
   const gotBox = op==="skip" && win && player==="jacob" && boss && boss.name==="Primal Wraith" && SkipGate.wraithWins()>=SKIP_MYSTERY && !Coins.isOwned("gunner");
   if(gotBox) awardMysteryBox();
@@ -1043,9 +1066,13 @@ function endGame(win){
   $("e-correct").textContent=smashed; $("e-points").textContent=score;
   $("e-acc").textContent=acc+"%"; $("e-pace").textContent = pace!=null?pace:"–";
   $("streakline").textContent = `Best streak ×${bestCombo} 🔥 · Kaiju defeated: ${bossesDefeated}`;
-  const isRecord = player==="jacob" && smashed > kaijuBest.smashed;
+  // Untimed Mult runs aren't comparable to timed games, so they don't count toward the blocks record.
+  const prevBest = kaijuBest.smashed;
+  const isRecord = player==="jacob" && op!=="mul" && smashed > prevBest;
   $("newbest").classList.toggle("hidden", !isRecord);
   if(isRecord) kaijuBest={smashed, secsPerCorrect:pace};
+  // Beating a real (already-loaded) record earns a character request.
+  showCharReq(isRecord && prevBest>0);
   $("coinchip").classList.remove("hidden");
   if(player==="jacob"){ lastAward = awardCoins(); Coins.addEarned(lastAward.total); showCoinAward(lastAward); }
   else { lastAward=null; $("coinaward").classList.add("hidden"); }
@@ -1054,6 +1081,38 @@ function endGame(win){
   updateCoinUI();
   logResult(acc, pace);
 }
+
+/* ---- record reward: describe a character you want created ---- */
+function showCharReq(on){
+  const box=$("charreq"); box.classList.toggle("hidden", !on); if(!on) return;
+  const t=$("charreq-text"); t.value=""; t.disabled=false;
+  $("charreq-send").disabled=false; $("charreq-send").classList.remove("hidden"); $("charreq-note").textContent="";
+}
+$("charreq-send").onclick=()=>{
+  const text=$("charreq-text").value.trim(), note=$("charreq-note");
+  if(text.length<3){ note.textContent="✏️ Tell us a little about your character first!"; return; }
+  const req={ action:"character", time:new Date().toLocaleString("en-US",{ timeZone:"America/Chicago" }),
+    student:CONFIG.student, description:text, record:smashed, mode:op, sessionId:sessionId };
+  CharReqs.add(req);   // local backup on this device, in case the Sheet can't be reached
+  $("charreq-text").disabled=true; $("charreq-send").disabled=true; $("charreq-send").classList.add("hidden");
+  note.textContent="Sending…";
+  CharReqs.send(req)
+    .then(()=>note.textContent="✓ Sent! Your character is on the way. 🦖")
+    .catch(()=>note.textContent="✓ Saved on this device. We'll send it next time.");
+};
+const CharReqs = {
+  _load(){ try{ return JSON.parse(localStorage.getItem("kb_char_requests")||"[]"); }catch(e){ return []; } },
+  _save(a){ try{ localStorage.setItem("kb_char_requests", JSON.stringify(a)); }catch(e){} },
+  add(req){ const a=this._load(); a.push(Object.assign({sent:false}, req)); this._save(a); },
+  _mark(sessionId){ const a=this._load(); a.forEach(r=>{ if(r.sessionId===sessionId) r.sent=true; }); this._save(a); },
+  send(req){
+    const body=Object.assign({}, req); delete body.sent;
+    return fetch(CONFIG.webAppUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)})
+      .then(()=>this._mark(req.sessionId));
+  },
+  retryUnsent(){ this._load().filter(r=>!r.sent).forEach(r=>this.send(r).catch(()=>{})); }
+};
+CharReqs.retryUnsent();
 
 function logResult(acc, pace){
   const note=$("save-note");
@@ -1064,7 +1123,7 @@ function logResult(acc, pace){
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: op==="mul" ? `mult tables ${mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} facts)` : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: op==="mul" ? `mult tables ${mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} facts${mulPool.length?`, stopped with ${mulPool.length} left`:""})` : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
@@ -1264,7 +1323,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v46";
+const BUILD="v47";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
