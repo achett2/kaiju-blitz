@@ -215,7 +215,7 @@
   /* Word problems & Break Apart: story text / dot array above the question, step hint after a miss */
   .fact-hint.story{ font-size:18px; line-height:1.25; text-transform:none; letter-spacing:.3px; color:var(--ink); max-width:480px; margin:4px auto 2px; }
   .fact-hint .cap{ font-size:13px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
-  .fact-hint .stephint{ margin-top:6px; font-size:17px; color:var(--gold); }
+  .fact-hint .stephint{ margin-top:6px; font-size:17px; color:var(--gold); text-transform:none; letter-spacing:.3px; }
   .arr{ display:inline-grid; gap:3px; justify-content:center; }
   .arr i{ display:block; width:10px; height:10px; border-radius:50%; background:#5fd476; }
   .arr i.b{ background:var(--gold); }
@@ -503,24 +503,55 @@ seg("op", v=>{
 /* ---- Mult: pick times tables; the game runs (untimed) until every fact in them is answered right first try ---- */
 let mulTables = (function(){ try{ const t=JSON.parse(localStorage.getItem("kb_mul_tables")); if(Array.isArray(t)&&t.length) return t; }catch(e){} return [1,2,3,4,5,6,7,8,9,10,11,12]; })();
 let mulPool=[], mulTotal=0, mulRecent=[];
+// ⭐ Tricky Facts: Jacob's misses from his 10/8/2026 progress test (0–6 tables, 82/91). Edit this list after each test.
+// Each must be cleared first try TWICE; its ±1 "neighbor" facts (the ones he mixes them up with) once.
+const TRICKY_FACTS = [[3,9],[4,8],[4,12],[5,8],[5,9],[5,11],[6,4],[6,6],[6,12]];
+let mulTricky = (function(){ try{ return localStorage.getItem("kb_mul_tricky")==="1"; }catch(e){ return false; } })();
+function saveMulPick(){ try{ localStorage.setItem("kb_mul_tables", JSON.stringify(mulTables)); localStorage.setItem("kb_mul_tricky", mulTricky?"1":"0"); }catch(e){} }
 function renderTables(){
-  const box=$("tables"), all=mulTables.length===12;
-  box.innerHTML = Array.from({length:12},(_,i)=>`<button data-v="${i+1}" class="${mulTables.indexOf(i+1)>=0?"on":""}">${i+1}</button>`).join("")
-    + `<button data-v="all" class="all ${all?"on":""}">${all?"✓ ALL TABLES":"ALL TABLES"}</button>`;
+  const box=$("tables"), all=!mulTricky && mulTables.length===12;
+  box.innerHTML = Array.from({length:12},(_,i)=>`<button data-v="${i+1}" class="${!mulTricky&&mulTables.indexOf(i+1)>=0?"on":""}">${i+1}</button>`).join("")
+    + `<button data-v="all" class="all ${all?"on":""}">${all?"✓ ALL TABLES":"ALL TABLES"}</button>`
+    + `<button data-v="tricky" class="all ${mulTricky?"on":""}">${mulTricky?"✓ ":""}⭐ TRICKY FACTS</button>`;
   box.querySelectorAll("button").forEach(b=> b.onclick=()=>{
     const v=b.getAttribute("data-v");
-    if(v==="all") mulTables = all ? [] : [1,2,3,4,5,6,7,8,9,10,11,12];
-    else { const n=+v, i=mulTables.indexOf(n); if(i>=0) mulTables.splice(i,1); else mulTables.push(n); mulTables.sort((a,b)=>a-b); }
-    try{ localStorage.setItem("kb_mul_tables", JSON.stringify(mulTables)); }catch(e){}
-    renderTables(); refreshLocks();   // clears any "pick a table" note
+    if(v==="tricky"){ mulTricky=!mulTricky; }
+    else if(v==="all"){ mulTables = all ? [] : [1,2,3,4,5,6,7,8,9,10,11,12]; mulTricky=false; }
+    else { if(mulTricky){ mulTricky=false; mulTables=[]; }   // picking a table leaves Tricky mode
+      const n=+v, i=mulTables.indexOf(n); if(i>=0) mulTables.splice(i,1); else mulTables.push(n); mulTables.sort((a,b)=>a-b); }
+    saveMulPick(); renderTables(); refreshLocks();   // clears any "pick a table" note
   });
 }
 renderTables();
 // Every fact with a factor in the chosen tables (× 1–12); 3×4 and 4×3 count as one fact.
+// Tricky mode: the TRICKY_FACTS (need 2 clears) plus their ±1 neighbors (need 1).
 function buildMulPool(){
   const seen={}; mulPool=[];
-  mulTables.forEach(t=>{ for(let n=1;n<=12;n++){ const a=Math.min(t,n), b=Math.max(t,n), k=a+"x"+b; if(!seen[k]){ seen[k]=1; mulPool.push({a,b,k}); } } });
-  mulTotal=mulPool.length; mulRecent=[];
+  const add=(x,y,need)=>{ if(x<1||y<1||x>12||y>12) return; const a=Math.min(x,y), b=Math.max(x,y), k=a+"x"+b;
+    if(seen[k]){ seen[k].need=Math.max(seen[k].need,need); return; } seen[k]={a,b,k,need}; mulPool.push(seen[k]); };
+  if(mulTricky){ TRICKY_FACTS.forEach(([x,y])=>add(x,y,2)); TRICKY_FACTS.forEach(([x,y])=>{ add(x,y-1,1); add(x,y+1,1); }); }
+  else mulTables.forEach(t=>{ for(let n=1;n<=12;n++) add(t,n,1); });
+  mulTotal=mulPool.reduce((s,f)=>s+f.need,0); mulRecent=[];
+}
+// A strategy that builds the fact from easier ones — shown after a miss (never gives the answer away).
+function factStrategy(x, y){
+  const ORDER=[0,1,10,2,11,5,9,12,4,3,6,8,7];   // which factor makes the friendliest strategy
+  const f = ORDER.indexOf(x)<=ORDER.indexOf(y) ? x : y, n = f===x ? y : x;
+  switch(f){
+    case 0:  return `💡 Anything × 0 = 0`;
+    case 1:  return `💡 Anything × 1 = itself`;
+    case 10: return `💡 ×10: put a 0 on the end of ${n}`;
+    case 2:  return `💡 ×2 = double: ${n} + ${n} = ?`;
+    case 11: return `💡 ×11 = ×10 + one more ${n}: ${n*10} + ${n} = ?`;
+    case 5:  return `💡 ×5 = half of ×10: half of ${n*10} = ?`;
+    case 9:  return `💡 ×9 = ×10 minus one ${n}: ${n*10} − ${n} = ?`;
+    case 12: return `💡 ×12 = ×10 + ×2: ${n*10} + ${n*2} = ?`;
+    case 4:  return `💡 ×4 = double, then double again: ${n} → ${n*2} → ?`;
+    case 3:  return `💡 ×3 = ×2 + one more ${n}: ${n*2} + ${n} = ?`;
+    case 6:  return `💡 ×6 = ×5 + one more ${n}: ${n*5} + ${n} = ?`;
+    case 8:  return `💡 ×8 = double ×4: 4×${n} = ${n*4}, doubled = ?`;
+    default: return `💡 ×7 = ×5 + ×2: ${n*5} + ${n*2} = ?`;
+  }
 }
 function nextMul(){
   // avoid repeating the last few facts while there are others left
@@ -528,9 +559,10 @@ function nextMul(){
   const f=from[randInt(0,from.length-1)], flip=Math.random()<0.5;
   mulRecent.push(f.k); if(mulRecent.length>3) mulRecent.shift();
   const x=flip?f.b:f.a, y=flip?f.a:f.b;
-  return {text:`${x} × ${y}`, ans:x*y, kind:"mul", key:f.k};
+  return {text:`${x} × ${y}`, ans:x*y, kind:"mul", key:f.k, step:factStrategy(x,y)};
 }
-function updateMulLeft(){ $("time-left").textContent=mulPool.length; }
+function mulLeft(){ return mulPool.reduce((s,f)=>s+f.need,0); }
+function updateMulLeft(){ $("time-left").textContent=mulLeft(); }
 
 /* ---- Word problems & Break Apart: untimed runs of RUN_LEN problems; a missed one comes back a few problems later ---- */
 const RUN_LEN = 10;
@@ -590,7 +622,7 @@ function distProblem(){
 function buildRun(){
   runQueue=[]; for(let i=0;i<RUN_LEN;i++){ const p = op==="word" ? wordProblem() : distProblem(); p.kind=op; runQueue.push(p); }
 }
-function updateLeft(){ $("time-left").textContent = op==="mul" ? mulPool.length : runQueue.length; }
+function updateLeft(){ $("time-left").textContent = op==="mul" ? mulLeft() : runQueue.length; }
 // End Game (Mult only): first tap arms it, second tap within 3s ends the run
 let endArmTimer=null;
 function resetEndGameBtn(){ clearTimeout(endArmTimer); const b=$("endgame-btn"); b.classList.remove("confirm"); b.textContent="⏹ END GAME"; }
@@ -882,7 +914,7 @@ function showFact(){
   cur=forcedNext||nextFact(); forcedNext=null; entry=""; curWrong=0;
   const hint=$("fact-hint"); if(hint){ hint.classList.toggle("big", cur.kind==="skip"); hint.classList.toggle("story", cur.kind==="word"||cur.kind==="dist");
     if(cur.story||cur.hintHTML){ hint.innerHTML = cur.hintHTML || ""; if(cur.story){ const s=document.createElement("div"); s.textContent=cur.story; hint.appendChild(s); } hint.classList.remove("hidden"); }
-    else if(cur.hint){ hint.textContent=cur.hint; hint.classList.remove("hidden"); } else hint.classList.add("hidden"); }
+    else if(cur.hint){ hint.textContent=cur.hint; hint.classList.remove("hidden"); } else { hint.innerHTML=""; hint.classList.add("hidden"); } }
   $("fact").textContent = (cur.kind==="skip" || cur.text.indexOf("?")>=0) ? cur.text : cur.text+" ="; $("fact").classList.toggle("sm", cur.text.length>9); $("entry").innerHTML="&nbsp;"; $("entry").classList.remove("bad");
   factShownAt=performance.now();
 }
@@ -988,8 +1020,8 @@ function tap(d){
     }
     if(op==="mul"){
       // first-try right clears the fact; a missed fact stays in the pool and comes back later
-      if(curWrong===0){ mulPool=mulPool.filter(f=>f.k!==cur.key); updateMulLeft(); }
-      if(!mulPool.length){ clearInterval(timer); inputLocked=true; banner("✖️ ALL "+mulTotal+" FACTS CLEARED!"); setTimeout(()=>endGame(true), 1200); return; }
+      if(curWrong===0){ const f=mulPool.find(f=>f.k===cur.key); if(f && --f.need<=0) mulPool=mulPool.filter(g=>g!==f); updateMulLeft(); }
+      if(!mulPool.length){ clearInterval(timer); inputLocked=true; banner(mulTricky?"⭐ TRICKY FACTS CRUSHED!":"✖️ ALL "+mulTotal+" FACTS CLEARED!"); setTimeout(()=>endGame(true), 1200); return; }
     } else if(op==="word"||op==="dist"){
       // first-try right clears the problem; a missed one comes back 3 problems later
       const p=runQueue.shift(); if(curWrong>0) runQueue.splice(Math.min(3, runQueue.length), 0, p); updateLeft();
@@ -1000,7 +1032,7 @@ function tap(d){
     entry=test; $("entry").textContent=entry;
   } else {
     attempts++; curWrong++; combo=0; setAtomic(false); updateHud();
-    if(cur.step && curWrong===1){ const s=document.createElement("div"); s.className="stephint"; s.textContent=cur.step; $("fact-hint").appendChild(s); }   // show the steps after a miss
+    if(cur.step && curWrong===1){ const h=$("fact-hint"), s=document.createElement("div"); s.className="stephint"; s.textContent=cur.step; h.appendChild(s); h.classList.remove("hidden"); }   // show the steps / strategy after a miss
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
@@ -1018,7 +1050,7 @@ $("pad").querySelectorAll("button").forEach(b=> b.onclick=()=>tap(b.textContent)
 document.addEventListener("keydown", e=>{ if(!$("game").classList.contains("hidden") && /^[0-9]$/.test(e.key)) tap(e.key); });
 
 function start(){
-  if(op==="mul" && !mulTables.length){ const n=$("lock-note"); n.textContent="✖️ Pick at least one times table first"; n.classList.remove("hidden"); return; }
+  if(op==="mul" && !mulTables.length && !mulTricky){ const n=$("lock-note"); n.textContent="✖️ Pick at least one times table first"; n.classList.remove("hidden"); return; }
   resetEndGameBtn(); $("endgame-btn").classList.toggle("hidden", !isUntimed());   // untimed modes need a way out
   score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
   phase="city"; cityProgress=0; boss=null; bossSpawnCount=0; bossesDefeated=0; captainWarmup=false; forcedNext=null;
@@ -1121,7 +1153,7 @@ function endGame(win){
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
   $("mysterybox").classList.add("hidden"); $("skip-progress").classList.add("hidden");
   if(op==="skip"){ $("e-big").textContent = win ? "⚙️💥" : "🦖💀"; $("e-title").textContent = win ? "VILLAIN DESTROYED!" : "THE VILLAIN WON…"; }
-  else if(op==="mul"){ $("e-big").textContent = win ? "🦖✖️💥" : "🦖⏸️"; $("e-title").textContent = win ? "ALL "+mulTotal+" FACTS CLEARED!" : "STOPPED — "+mulPool.length+" OF "+mulTotal+" FACTS LEFT"; }
+  else if(op==="mul"){ $("e-big").textContent = win ? "🦖✖️💥" : "🦖⏸️"; $("e-title").textContent = win ? (mulTricky ? "⭐ TRICKY FACTS CRUSHED!" : "ALL "+mulTotal+" FACTS CLEARED!") : "STOPPED — "+mulLeft()+" OF "+mulTotal+" LEFT"; }
   else if(op==="word"||op==="dist"){ $("e-big").textContent = win ? (op==="word"?"🦖📖💥":"🦖✂️💥") : "🦖⏸️"; $("e-title").textContent = win ? "ALL "+RUN_LEN+" PROBLEMS SOLVED!" : "STOPPED — "+runQueue.length+" OF "+RUN_LEN+" PROBLEMS LEFT"; }
   else { $("e-big").textContent="🦖💥"; $("e-title").textContent="RAMPAGE OVER!"; }
   const gotBox = op==="skip" && win && player==="jacob" && boss && boss.name==="Primal Wraith" && SkipGate.wraithWins()>=SKIP_MYSTERY && !Coins.isOwned("gunner");
@@ -1206,7 +1238,7 @@ function logResult(acc, pace){
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: (op==="word"||op==="dist") ? `${opLabel} (${runNote})` : op==="mul" ? `mult tables ${mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} facts${mulPool.length?`, stopped with ${mulPool.length} left`:""})` : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: (op==="word"||op==="dist") ? `${opLabel} (${runNote})` : op==="mul" ? `mult tables ${mulTricky?"tricky":mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} ${mulTricky?"answers":"facts"}${mulPool.length?`, stopped with ${mulLeft()} left`:""})`   /* keep the "mult tables" prefix: the .gs record lookup skips it */ : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
@@ -1406,7 +1438,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v48";
+const BUILD="v49";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
