@@ -231,6 +231,8 @@
   .hm-bubble{ position:relative; margin:22px auto 22px; padding:18px 20px; background:#10211b; border:4px solid var(--gold); border-radius:20px;
       font:800 28px/1.35 'Barlow Condensed',sans-serif; color:var(--gold); white-space:pre-line; }
   .hm-bubble .rule, .stephint .bubble .rule{ color:#fff; }   /* line 1 = the rule (white); the steps stay gold */
+  .hm-bubble .tipline + .tipline{ margin-top:1em; }          /* a blank line's worth of space between tip lines */
+  .stephint .bubble .tipline + .tipline{ margin-top:.6em; }
   .hm-bubble::before{ content:""; position:absolute; top:-18px; left:50%; margin-left:-16px; border:16px solid transparent; border-top:0; border-bottom-color:var(--gold); }
   #hm-go{ width:100%; font-size:26px; }
   /* stopwatch: paused while a hint shows; bar turns red past the target time */
@@ -1133,8 +1135,7 @@ let hintOpen=false;
 // Tip text: first line is the rule (white), the rest are the steps (gold), one per line.
 function fillTip(el, text){
   const lines=String(text).split("\n"); el.textContent="";
-  const r=document.createElement("div"); r.className="rule"; r.textContent=lines[0]; el.appendChild(r);
-  if(lines.length>1){ const st=document.createElement("div"); st.textContent=lines.slice(1).join("\n"); el.appendChild(st); }
+  lines.forEach((t,i)=>{ const d=document.createElement("div"); d.className = i===0 ? "rule tipline" : "tipline"; d.textContent=t; el.appendChild(d); });   // one block per line, spaced apart
 }
 function openHintModal(text){
   hintOpen=true; inputLocked=true; pauseClock();
@@ -1582,7 +1583,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v55";
+const BUILD="v56";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
