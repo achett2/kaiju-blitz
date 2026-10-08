@@ -101,6 +101,9 @@
   .endgame-btn.confirm{color:#fff; background:var(--fire); border-color:var(--fire);}
   .charreq{max-width:340px; margin:10px auto 0; padding:12px; text-align:center; border:3px solid var(--gold); border-radius:10px; background:rgba(255,196,0,.1); font-family:'Barlow Condensed',sans-serif; font-weight:800; color:var(--ink);}
   .charreq b{font-family:'Bangers',cursive; font-size:20px; color:var(--gold); letter-spacing:1px; display:block; margin-bottom:4px;}
+  .ideabox{max-width:340px; margin:10px auto 0; text-align:center; font:800 15px 'Barlow Condensed',sans-serif; color:var(--ink);}
+  .ideabox .storebtn{width:100%;}
+  .ideabox textarea{width:100%; box-sizing:border-box; margin:8px 0 0; padding:8px; font:600 16px 'Barlow Condensed',sans-serif; color:var(--ink); background:#10211b; border:2px solid #2c4a3b; border-radius:8px; resize:vertical;}
   .charreq textarea{width:100%; box-sizing:border-box; margin:8px 0; padding:8px; font:600 16px 'Barlow Condensed',sans-serif; color:var(--ink); background:#10211b; border:2px solid #2c4a3b; border-radius:8px; resize:vertical;}
   .charreq .storebtn{width:100%; margin-top:0;}
   .mysterybox b{font-family:'Bangers',cursive; font-size:20px; color:var(--gold); letter-spacing:1px; display:block; margin-bottom:4px;}
@@ -397,6 +400,14 @@
     <div class="mysterybox hidden" id="mysterybox"></div>
     <div class="skipprog hidden" id="skip-progress"></div>
     <div class="dailyprog hidden" id="daily-progress"></div>
+    <div class="ideabox hidden" id="ideabox">
+      <button class="storebtn" id="idea-open">💡 SUGGEST AN IDEA FOR THE GAME</button>
+      <div class="hidden" id="idea-form">
+        <textarea id="idea-text" rows="3" maxlength="300" placeholder="Example: a boss that splits into two when you hit it"></textarea>
+        <button class="storebtn" id="idea-send">SEND MY IDEA ✉️</button>
+      </div>
+      <div id="idea-note"></div>
+    </div>
     <p class="save-note" id="save-note"></p>
     <button class="start-btn" id="again" style="max-width:300px;margin:0 auto;display:block;">GO AGAIN 🔥</button>
     <button class="storebtn" id="open-store-2" style="max-width:300px;margin:8px auto 0;display:block;">🛒 Radiation Store</button>
@@ -578,7 +589,8 @@ const RUN_LEN = 10;
 let runQueue=[];
 const isUntimed = ()=> op==="mul" || op==="word" || op==="dist";
 // Stopwatch for the untimed modes: counts UP, pauses while Godzilla's hint is showing, target time to beat.
-const PAR_SEC = { mul:180, word:300, dist:300 };
+// Target time: Word/Break Apart 5:00; Mult scales with the run — ~5 s per answer, rounded up to 10 s, at least 1:00.
+function parSec(){ return op==="mul" ? Math.max(60, Math.ceil(mulTotal*5/10)*10) : 300; }
 let runStart=0, pausedMs=0, pauseAt=0, runFinal=null, runWon=false, parPassed=false;
 function runElapsed(){ return runFinal!=null ? runFinal : ((pauseAt||performance.now()) - runStart - pausedMs)/1000; }
 function fmtClock(s){ s=Math.floor(s); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
@@ -1117,7 +1129,7 @@ function start(){
       $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/(duration+timeBonus))+"%";
     } else if(runFinal==null){
       // stopwatch: the bar fills toward the target time, then turns red (he keeps playing)
-      const e=runElapsed(), par=PAR_SEC[op];
+      const e=runElapsed(), par=parSec();
       $("time-left").textContent=(pauseAt?"⏸ ":"")+fmtClock(e); $("time-fill").style.width=Math.min(100,100*e/par)+"%";
       if(e>par && !parPassed){ parPassed=true; $("timebar").classList.add("over"); banner("⏱️ PAST "+fmtClock(par)+" — KEEP GOING!"); }
     }
@@ -1222,7 +1234,7 @@ function endGame(win){
   $("newbest").textContent="🏆 NEW BEST!"; $("newbest").classList.toggle("hidden", !isRecord);
   if(isRecord) kaijuBest={smashed, secsPerCorrect:pace};
   if(isUntimed()){   // stopwatch modes: show the time, the target, and the best time (finished runs only)
-    const t=runElapsed(), par=PAR_SEC[op], key=bestTimeKey(), bt=bestTimes(), prev=bt[key];
+    const t=runElapsed(), par=parSec(), key=bestTimeKey(), bt=bestTimes(), prev=bt[key];
     const isBestTime = runWon && (prev==null || t<prev);
     if(isBestTime && player==="jacob"){ bt[key]=Math.round(t*10)/10; try{ localStorage.setItem("kb_best_times", JSON.stringify(bt)); }catch(e){} }
     const best = (isBestTime && player==="jacob") ? t : prev;
@@ -1232,6 +1244,7 @@ function endGame(win){
   }
   // Beating a real (already-loaded) record earns a character request.
   showCharReq(isRecord && prevBest>0);
+  showIdeaBox(player==="jacob");   // every finished game: Jacob can suggest a feature
   $("coinchip").classList.remove("hidden");
   if(player==="jacob"){ lastAward = awardCoins(); Coins.addEarned(lastAward.total); showCoinAward(lastAward); }
   else { lastAward=null; $("coinaward").classList.add("hidden"); }
@@ -1259,19 +1272,41 @@ $("charreq-send").onclick=()=>{
     .then(()=>note.textContent="✓ Sent! Your character is on the way. 🦖")
     .catch(()=>note.textContent="✓ Saved on this device. We'll send it next time.");
 };
+// Outbox for Jacob's messages to the Sheet (character requests + feature ideas): saved on the device first,
+// marked sent by a per-message id, and anything unsent is retried on the next page load.
 const CharReqs = {
   _load(){ try{ return JSON.parse(localStorage.getItem("kb_char_requests")||"[]"); }catch(e){ return []; } },
   _save(a){ try{ localStorage.setItem("kb_char_requests", JSON.stringify(a)); }catch(e){} },
-  add(req){ const a=this._load(); a.push(Object.assign({sent:false}, req)); this._save(a); },
-  _mark(sessionId){ const a=this._load(); a.forEach(r=>{ if(r.sessionId===sessionId) r.sent=true; }); this._save(a); },
+  add(req){ req.id = req.id || Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    const a=this._load(); a.push(Object.assign({sent:false}, req)); this._save(a); },
+  _mark(req){ const a=this._load(); a.forEach(r=>{ if(req.id ? r.id===req.id : (!r.id && r.sessionId===req.sessionId)) r.sent=true; }); this._save(a); },
   send(req){
-    const body=Object.assign({}, req); delete body.sent;
+    const body=Object.assign({}, req); delete body.sent; delete body.id;
     return fetch(CONFIG.webAppUrl,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)})
-      .then(()=>this._mark(req.sessionId));
+      .then(()=>this._mark(req));
   },
   retryUnsent(){ this._load().filter(r=>!r.sent).forEach(r=>this.send(r).catch(()=>{})); }
 };
 CharReqs.retryUnsent();
+
+/* ---- after every game: Jacob can suggest a feature (goes to the Sheet's "Feature Ideas" tab) ---- */
+function showIdeaBox(on){
+  $("ideabox").classList.toggle("hidden", !on); if(!on) return;
+  $("idea-form").classList.add("hidden"); $("idea-open").classList.remove("hidden");
+  $("idea-text").value=""; $("idea-text").disabled=false; $("idea-send").classList.remove("hidden"); $("idea-note").textContent="";
+}
+$("idea-open").onclick=()=>{ $("idea-open").classList.add("hidden"); $("idea-form").classList.remove("hidden"); $("idea-text").focus(); };
+$("idea-send").onclick=()=>{
+  const text=$("idea-text").value.trim(), note=$("idea-note");
+  if(text.length<3){ note.textContent="✏️ Tell us your idea first!"; return; }
+  const req={ action:"idea", time:new Date().toLocaleString("en-US",{ timeZone:"America/Chicago" }),
+    student:CONFIG.student, idea:text, mode:op, sessionId:sessionId };
+  CharReqs.add(req);
+  $("idea-text").disabled=true; $("idea-send").classList.add("hidden"); note.textContent="Sending…";
+  CharReqs.send(req)
+    .then(()=>note.textContent="✓ Idea sent! Thanks, game designer! 🦖")
+    .catch(()=>note.textContent="✓ Saved on this device. We'll send it next time.");
+};
 
 function logResult(acc, pace){
   const note=$("save-note");
@@ -1398,7 +1433,7 @@ function awardCoins(){
   }
 
   let clk=0;   // stopwatch modes: finishing every problem under the target time
-  if(bonusOK && isUntimed() && runWon && runElapsed()<=PAR_SEC[op]){ clk=10; parts.push({label:"Beat the clock ⏱️", n:clk}); }
+  if(bonusOK && isUntimed() && runWon && runElapsed()<=parSec()){ clk=10; parts.push({label:"Beat the clock ⏱️", n:clk}); }
 
   const total = base+acc+spd+rec+cons+clk;
   return { total, parts };
@@ -1487,7 +1522,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v51";
+const BUILD="v52";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
