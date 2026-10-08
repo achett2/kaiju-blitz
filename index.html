@@ -215,7 +215,13 @@
   /* Word problems & Break Apart: story text / dot array above the question, step hint after a miss */
   .fact-hint.story{ font-size:18px; line-height:1.25; text-transform:none; letter-spacing:.3px; color:var(--ink); max-width:480px; margin:4px auto 2px; }
   .fact-hint .cap{ font-size:13px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
-  .fact-hint .stephint{ margin-top:6px; font-size:17px; color:var(--gold); text-transform:none; letter-spacing:.3px; }
+  /* hint "spoken" by Godzilla: round face + speech bubble */
+  .fact-hint .stephint{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:6px; text-align:left;
+      font-size:17px; color:var(--gold); text-transform:none; letter-spacing:.3px; animation:hintpop .25s ease-out; }
+  .stephint img{ width:46px; height:46px; flex-shrink:0; border-radius:50%; border:2px solid #3fa9ff; box-shadow:0 0 12px rgba(63,169,255,.65); }
+  .stephint .bubble{ position:relative; max-width:300px; padding:6px 10px; background:#10211b; border:2px solid var(--gold); border-radius:12px; }
+  .stephint .bubble::before{ content:""; position:absolute; left:-9px; top:50%; margin-top:-7px; border:7px solid transparent; border-left:0; border-right-color:var(--gold); }
+  @keyframes hintpop{ from{ transform:scale(.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
   .arr{ display:inline-grid; gap:3px; justify-content:center; }
   .arr i{ display:block; width:10px; height:10px; border-radius:50%; background:#5fd476; }
   .arr i.b{ background:var(--gold); }
@@ -1032,7 +1038,11 @@ function tap(d){
     entry=test; $("entry").textContent=entry;
   } else {
     attempts++; curWrong++; combo=0; setAtomic(false); updateHud();
-    if(cur.step && curWrong===1){ const h=$("fact-hint"), s=document.createElement("div"); s.className="stephint"; s.textContent=cur.step; h.appendChild(s); h.classList.remove("hidden"); }   // show the steps / strategy after a miss
+    if(cur.step && curWrong===1){   // Godzilla "says" the steps / strategy after a miss
+      const h=$("fact-hint"), s=document.createElement("div"), b=document.createElement("span");
+      s.className="stephint"; s.innerHTML='<img src="kaiju-face-sm.png?v=1" alt="">';
+      b.className="bubble"; b.textContent=cur.step.replace(/^💡\s*/,""); s.appendChild(b);
+      h.appendChild(s); h.classList.remove("hidden"); }
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
@@ -1438,7 +1448,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v49";
+const BUILD="v50";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
