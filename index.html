@@ -225,8 +225,9 @@
   .stephint .bubble{ position:relative; max-width:340px; padding:8px 12px; white-space:pre-line; background:#10211b; border:3px solid var(--gold); border-radius:14px; }
   .stephint .bubble::before{ content:""; position:absolute; left:-12px; top:50%; margin-top:-9px; border:9px solid transparent; border-left:0; border-right-color:var(--gold); }
   /* hint pop-up (full screen) */
-  .hintmodal{ position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.78); }
-  .hm-card{ width:100%; max-width:440px; text-align:center; animation:hintpop .3s ease-out; }
+  /* flex-start + margin:auto centers the card but lets a too-tall tip scroll instead of being cut off */
+  .hintmodal{ position:fixed; inset:0; z-index:300; display:flex; align-items:flex-start; justify-content:center; padding:16px; overflow-y:auto; background:rgba(0,0,0,.78); }
+  .hm-card{ width:100%; max-width:440px; margin:auto 0; text-align:center; animation:hintpop .3s ease-out; }
   .hm-card img{ width:160px; height:160px; border-radius:50%; border:5px solid #3fa9ff; box-shadow:0 0 30px rgba(63,169,255,.85); }
   .hm-bubble{ position:relative; margin:22px auto 22px; padding:18px 20px; background:#10211b; border:4px solid var(--gold); border-radius:20px;
       font:800 28px/1.35 'Barlow Condensed',sans-serif; color:var(--gold); white-space:pre-line; }
@@ -236,6 +237,12 @@
   .fact-hint.big .stephint{ font-family:'Barlow Condensed',sans-serif; text-shadow:none; color:var(--gold); }   /* skip mode's big "Count by" header shouldn't restyle the tip */
   .hm-bubble::before{ content:""; position:absolute; top:-18px; left:50%; margin-left:-16px; border:16px solid transparent; border-top:0; border-bottom-color:var(--gold); }
   #hm-go{ width:100%; font-size:26px; }
+  @media (max-height:760px){   /* shorter phones (e.g. iPhone SE): shrink so the longest tip + button fit */
+    .hm-card img{ width:96px; height:96px; }
+    .hm-bubble{ margin:14px auto 14px; padding:12px 14px; font-size:23px; }
+    .hm-bubble .tipline + .tipline{ margin-top:.55em; }
+    #hm-go{ font-size:22px; }
+  }
   /* stopwatch: paused while a hint shows; bar turns red past the target time */
   #time-stat.paused{ opacity:.55; }
   .timebar.over>div{ background:var(--red); }
@@ -590,7 +597,7 @@ function factStrategy(x, y){
     case 4:  return `x4 means double it once,\nDouble ${n} is ${n*2}\nThen double it again\nDouble ${n*2} is ???`;
     case 3:  return `x3 is the same as x2, then one more ${n}\n${n} x 2 = ${n*2}\nAdd one more ${n} to get ???`;
     case 6:  return `x6 is the same as x5, then one more ${n}\n${n} x 5 = ${n*5}\nAdd one more ${n} to get ???`;
-    case 8:  return `x8 means double it three times\nDouble ${n} is ${n*2}\nDouble again is ${n*4}\nDouble one more time is ???`;
+    case 8:  return `x8 means double it once,\nDouble ${n} is ${n*2}\nThen double it again\nDouble ${n*2} is ${n*4}\nThen double it one more time\nDouble ${n*4} is ???`;
     default: return `x7 is the same as x5 plus x2\n${n} x 5 = ${n*5}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
   }
 }
@@ -1587,7 +1594,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v57";
+const BUILD="v58";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
