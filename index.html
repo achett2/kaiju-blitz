@@ -590,15 +590,15 @@ function factStrategy(x, y){
     case 1:  return `Anything times 1 stays the same number`;
     case 10: return `x10 is easy!\nJust put a 0 on the end of ${n}`;
     case 2:  return `x2 means double it\n${n} plus ${n} is ???`;
-    case 11: return `x11 is the same as x10, then one more ${n}\n${n} x 10 = ${n*10}\nAdd one more ${n} to get ???`;
-    case 5:  return `x5 is the same as x10 then split in half\n${n} x 10 = ${n*10}\nHalf of that is ???`;
-    case 9:  return `x9 is the same as x10, then take one ${n} away\n${n} x 10 = ${n*10}\nTake away ${n} to get ???`;
-    case 12: return `x12 is the same as x10 plus x2\n${n} x 10 = ${n*10}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
+    case 11: return `x11 means x10 first,\n${n} times 10 is ${n*10}\nThen add one more ${n}\n${n*10} plus ${n} is ???`;
+    case 5:  return `x5 means x10 first,\n${n} times 10 is ${n*10}\nThen split it in half\nHalf of ${n*10} is ???`;
+    case 9:  return `x9 means x10 first,\n${n} times 10 is ${n*10}\nThen take away one ${n}\n${n*10} take away ${n} is ???`;
+    case 12: return `x12 means x10 first,\n${n} times 10 is ${n*10}\nThen add two more ${n}s\nTwo ${n}s is ${n*2}\n${n*10} plus ${n*2} is ???`;
     case 4:  return `x4 means double it once,\nDouble ${n} is ${n*2}\nThen double it again\nDouble ${n*2} is ???`;
     case 3:  return `x3 means double it once,\nDouble ${n} is ${n*2}\nThen add one more ${n}\n${n*2} plus ${n} is ???`;
-    case 6:  return `x6 is the same as x5, then one more ${n}\n${n} x 5 = ${n*5}\nAdd one more ${n} to get ???`;
+    case 6:  return `x6 means x5 first,\n${n} times 5 is ${n*5}\nThen add one more ${n}\n${n*5} plus ${n} is ???`;
     case 8:  return `x8 means double it once,\nDouble ${n} is ${n*2}\nThen double it again\nDouble ${n*2} is ${n*4}\nThen double it one more time\nDouble ${n*4} is ???`;
-    default: return `x7 is the same as x5 plus x2\n${n} x 5 = ${n*5}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
+    default: return `x7 means x5 first,\n${n} times 5 is ${n*5}\nThen add two more ${n}s\nTwo ${n}s is ${n*2}\n${n*5} plus ${n*2} is ???`;
   }
 }
 function nextMul(){
@@ -1594,7 +1594,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v59";
+const BUILD="v60";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
