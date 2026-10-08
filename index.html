@@ -212,6 +212,14 @@
   .fact,.entry{ font-family:'Anton',sans-serif; letter-spacing:1px; text-shadow:2px 2px 0 #08090a; }
   .fact.sm{ font-size:22px; }
   .fact-hint{ text-align:center; font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:13px; letter-spacing:.5px; text-transform:uppercase; color:var(--gold); margin:2px 0 -2px; }
+  /* Word problems & Break Apart: story text / dot array above the question, step hint after a miss */
+  .fact-hint.story{ font-size:18px; line-height:1.25; text-transform:none; letter-spacing:.3px; color:var(--ink); max-width:480px; margin:4px auto 2px; }
+  .fact-hint .cap{ font-size:13px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+  .fact-hint .stephint{ margin-top:6px; font-size:17px; color:var(--gold); }
+  .arr{ display:inline-grid; gap:3px; justify-content:center; }
+  .arr i{ display:block; width:10px; height:10px; border-radius:50%; background:#5fd476; }
+  .arr i.b{ background:var(--gold); }
+  .arr .cut{ grid-column:1/-1; height:3px; margin:2px 0; background:var(--fire); border-radius:2px; }
   .fact-hint.big{ font-family:'Bangers',cursive; font-size:30px; letter-spacing:1.5px; color:var(--green); text-shadow:2px 2px 0 #08090a; margin:4px 0; }
   .tile{ border:3px solid #08090a; border-radius:0; box-shadow:3px 3px 0 #08090a; background:#10160f; }
   .tile b{ font-family:'Anton',sans-serif; }
@@ -295,6 +303,8 @@
           <button data-v="skip">🔢 Skip</button>
           <button data-v="mul">× Mult</button>
           <button data-v="div">÷ Div</button>
+          <button data-v="word">📖 Word</button>
+          <button data-v="dist">✂️ Break Apart</button>
         </div>
         <div class="lock-note hidden" id="lock-note"></div>
       </div>
@@ -486,7 +496,7 @@ function refreshLocks(){
 }
 seg("op", v=>{
   if(v==="div" && !SkipGate.unlocked()){ refreshLocks(); return false; }
-  op=v; $("range-group").classList.toggle("hidden", v==="round"||v==="mul"||v==="div"||v==="skip");
+  op=v; $("range-group").classList.toggle("hidden", ["round","mul","div","skip","word","dist"].indexOf(v)>=0);
   $("tables-group").classList.toggle("hidden", v!=="mul");
 }); seg("range", v=>range=+v);
 
@@ -521,6 +531,66 @@ function nextMul(){
   return {text:`${x} × ${y}`, ans:x*y, kind:"mul", key:f.k};
 }
 function updateMulLeft(){ $("time-left").textContent=mulPool.length; }
+
+/* ---- Word problems & Break Apart: untimed runs of RUN_LEN problems; a missed one comes back a few problems later ---- */
+const RUN_LEN = 10;
+let runQueue=[];
+const isUntimed = ()=> op==="mul" || op==="word" || op==="dist";
+const pick = a => a[randInt(0, a.length-1)];
+const VILLAINS = ["Megabolt","Stackjaw","Gridlock","Swarmoth","Hydraxis","Tallyhorn","Minuscrab","Sharewolf"];
+// [plural, singular] for each layer of a "groups of groups" story
+const NESTS = [
+  [["crates","crate"],["boxes","box"],["bolts"]],
+  [["nests","nest"],["rows","row"],["eggs"]],
+  [["trucks","truck"],["cages","cage"],["robot rats"]],
+  [["caves","cave"],["piles","pile"],["crystals"]],
+  [["trains","train"],["cars","car"],["monster snacks"]],
+  [["ships","ship"],["tanks","tank"],["sea serpents"]]
+];
+function wordProblem(){
+  const V=pick(VILLAINS), t=randInt(1,100);
+  if(t<=35){   // three factors: a groups of b groups of c
+    let a, b; do{ a=randInt(2,4); b=randInt(2,5); }while(a*b>12);
+    const c=randInt(2,9), [o,m,[inner]]=pick(NESTS);
+    return { story:`${V} has ${a} ${o[0]}. Each ${o[1]} holds ${b} ${m[0]}. Each ${m[1]} has ${c} ${inner}. How many ${inner} in all?`,
+      text:`? ${inner}`, ans:a*b*c, log:`${a}×${b}×${c}`,
+      step:`💡 First: ${a} ${o[0]} × ${b} = ${a*b} ${m[0]}. Then ${a*b} × ${c} = ?` };
+  }
+  if(t<=60){   // rate × (two time periods)
+    const r=randInt(2,9), h1=randInt(2,6), h2=randInt(1,4), h=h1+h2, h2s=h2+(h2===1?" hour":" hours");
+    if(Math.random()<0.5) return { story:`${V} stomps ${r} buildings every hour. It stomps for ${h1} hours on Monday and ${h2s} on Tuesday. How many buildings does it stomp?`,
+      text:"? buildings", ans:r*h, log:`${r}×(${h1}+${h2})`, step:`💡 First: ${h1} + ${h2} = ${h} hours. Then ${h} × ${r} = ?` };
+    return { story:`A kaiju-blaster costs $${r} for each hour. Jacob rents one for ${h1} hours on Saturday and ${h2s} on Sunday. How much does he spend?`,
+      text:"$ ?", ans:r*h, log:`$${r}×(${h1}+${h2})`, step:`💡 First: ${h1} + ${h2} = ${h} hours. Then ${h} × $${r} = ?` };
+  }
+  if(t<=80){   // multiply, then add or subtract
+    const a=randInt(3,8), b=randInt(3,9), n=a*b;
+    if(Math.random()<0.5){ const c=randInt(1,b); return { story:`${V} guards ${a} nests with ${b} eggs in each nest. ${c===1?"1 egg hatches":c+" eggs hatch"}. How many eggs are still in the nests?`,
+      text:"? eggs", ans:n-c, log:`${a}×${b}−${c}`, step:`💡 First: ${a} × ${b} = ${n} eggs. Then ${n} − ${c} = ?` }; }
+    const c=randInt(2,9); return { story:`Jacob smashes ${a} towers with ${b} windows each. Then he smashes ${c} more windows. How many windows did he smash?`,
+      text:"? windows", ans:n+c, log:`${a}×${b}+${c}`, step:`💡 First: ${a} × ${b} = ${n} windows. Then ${n} + ${c} = ?` };
+  }
+  const a=randInt(3,9), b=randInt(3,9);   // one step: equal groups
+  return { story:`Jacob finds ${a} bags of energy cubes. Each bag has ${b} cubes. How many energy cubes does he have?`,
+    text:"? cubes", ans:a*b, log:`${a}×${b}`, step:`💡 ${a} groups of ${b}: ${a} × ${b} = ?` };
+}
+function arrayHTML(r, c, k){   // r rows × c columns, cut after row k (top part green, bottom gold)
+  let h=`<div class="arr" style="grid-template-columns:repeat(${c},10px)">`;
+  for(let i=0;i<r;i++){ if(i===k) h+=`<div class="cut"></div>`; for(let j=0;j<c;j++) h+=`<i${i>=k?' class="b"':''}></i>`; }
+  return h+`</div>`;
+}
+function distProblem(){
+  const r=randInt(3,9), c=randInt(3,9), k=randInt(1,r-1), j=r-k, t=randInt(1,100);
+  const base={ hintHTML:`<div class="cap">✂️ ${r} rows of ${c} — broken apart</div>`+arrayHTML(r,c,k) };
+  if(t<=30) return Object.assign(base,{ text:`${r}×${c} = (${k}×${c}) + (?×${c})`, ans:j, log:`${r}×${c}=(${k}×${c})+(?×${c})`, step:`💡 ${r} rows = ${k} rows + ? rows` });
+  if(t<=45) return Object.assign(base,{ text:`${r}×${c} = (${k}×${c}) + (${j}×?)`, ans:c, log:`${r}×${c}=(${k}×${c})+(${j}×?)`, step:`💡 Every row has the same number of dots. Count one row!` });
+  if(t<=75) return Object.assign(base,{ text:`(${k}×${c}) + (${j}×${c}) = ?`, ans:r*c, log:`(${k}×${c})+(${j}×${c})`, step:`💡 ${k}×${c} = ${k*c} and ${j}×${c} = ${j*c}. Add them!` });
+  return Object.assign(base,{ text:`(${k}×${c}) + (${j}×${c}) = ?×${c}`, ans:r, log:`(${k}×${c})+(${j}×${c})=?×${c}`, step:`💡 ${k} rows + ${j} rows = ? rows` });
+}
+function buildRun(){
+  runQueue=[]; for(let i=0;i<RUN_LEN;i++){ const p = op==="word" ? wordProblem() : distProblem(); p.kind=op; runQueue.push(p); }
+}
+function updateLeft(){ $("time-left").textContent = op==="mul" ? mulPool.length : runQueue.length; }
 // End Game (Mult only): first tap arms it, second tap within 3s ends the run
 let endArmTimer=null;
 function resetEndGameBtn(){ clearTimeout(endArmTimer); const b=$("endgame-btn"); b.classList.remove("confirm"); b.textContent="⏹ END GAME"; }
@@ -616,7 +686,9 @@ const ROSTERS = {
   round: ["Roundor","Captain Underpants","Spirolith"],
   mul: ["Hydraxis","Swarmoth","Gridlock"],
   div: ["Splitfang","Fractor","Sharewolf"],
-  skip: ["Megabolt","Primal Wraith"]
+  skip: ["Megabolt","Primal Wraith"],
+  word: ["Stackjaw","Gridlock","Hydraxis","Tallyhorn"],
+  dist: ["Splitfang","Fractor","Twinvolt","Gridlock"]   // the "breaking apart" villains
 };
 function captainSVG(){ return `<svg viewBox="0 0 110 132" class="mon"><g stroke="#0a0a0a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
   <path d="M40 58 Q12 72 22 104 L40 96 Z" fill="#e23"/>
@@ -765,6 +837,7 @@ function nextFact(){
   if(op==="skip") return nextSkip();
   if(op==="round") return nextRound();
   if(op==="mul") return nextMul();
+  if(op==="word"||op==="dist") return runQueue[0];
   if(op==="div"){ const d=randInt(2,10), q=randInt(2,10); return {text:`${d*q} ÷ ${d}`, ans:q, kind:"div"}; }
   let kind = op==="mix" ? (Math.random()<0.5?"add":"sub") : op;
   if(kind==="add"){ const a=randInt(1,range-1), b=randInt(1,range-a); return {text:`${a} + ${b}`, ans:a+b, kind}; }
@@ -780,7 +853,7 @@ let cur, entry="", score=0, combo=0, bestCombo=0, smashed=0, correct=0, attempts
     playerHP=0, duelOver=false, shells=0;
 
 function buildSkyline(n){
-  n = n || ((op==="mul"||op==="div") ? MULDIV_BUILDINGS : NB); cityTarget = n;
+  n = n || ((op==="word"||op==="dist") ? 3 : (op==="mul"||op==="div") ? MULDIV_BUILDINGS : NB); cityTarget = n;
   const sky=$("skyline"); sky.innerHTML=""; buildings=[];
   const icons=["🏢","🏬","🏭","🏚️","🗼","🏨"];
   for(let i=0;i<n;i++){
@@ -807,8 +880,10 @@ function takeover(text, ms, penalty){
 
 function showFact(){
   cur=forcedNext||nextFact(); forcedNext=null; entry=""; curWrong=0;
-  const hint=$("fact-hint"); if(hint){ hint.classList.toggle("big", cur.kind==="skip"); if(cur.hint){ hint.textContent=cur.hint; hint.classList.remove("hidden"); } else hint.classList.add("hidden"); }
-  $("fact").textContent = cur.kind==="skip" ? cur.text : cur.text+" ="; $("fact").classList.toggle("sm", cur.text.length>9); $("entry").innerHTML="&nbsp;"; $("entry").classList.remove("bad");
+  const hint=$("fact-hint"); if(hint){ hint.classList.toggle("big", cur.kind==="skip"); hint.classList.toggle("story", cur.kind==="word"||cur.kind==="dist");
+    if(cur.story||cur.hintHTML){ hint.innerHTML = cur.hintHTML || ""; if(cur.story){ const s=document.createElement("div"); s.textContent=cur.story; hint.appendChild(s); } hint.classList.remove("hidden"); }
+    else if(cur.hint){ hint.textContent=cur.hint; hint.classList.remove("hidden"); } else hint.classList.add("hidden"); }
+  $("fact").textContent = (cur.kind==="skip" || cur.text.indexOf("?")>=0) ? cur.text : cur.text+" ="; $("fact").classList.toggle("sm", cur.text.length>9); $("entry").innerHTML="&nbsp;"; $("entry").classList.remove("bad");
   factShownAt=performance.now();
 }
 
@@ -839,6 +914,7 @@ function spawnBoss(nameArg, hitsArg){
   let name, hitModel=false;
   if(nameArg){ name=nameArg; hitModel=true; }        // round mode: fixed hits
   else { const roster=ROSTERS[op]||ROSTERS.add; name=roster[(bossOffset+bossSpawnCount-1)%roster.length]; }
+  if(op==="word"||op==="dist"){ hitModel=true; hitsArg=3; }   // slow, thinking problems: 3 right answers beat a boss
   const isCaptain = name==="Captain Underpants";
   const maxHp = hitModel ? (hitsArg||4) : (isCaptain ? 1 : 90+(bossSpawnCount-1)*40);
   boss={ name, max: maxHp, hitModel }; boss.hp=boss.max;
@@ -859,7 +935,7 @@ function setAtomic(on){
   atomicMode = on;
   const h=$("hero");
   if(on){ h.innerHTML=chargedHeroSVG(); h.classList.add("charged");
-    if(op==="mul") banner("⚡ CHARGED UP!");
+    if(isUntimed()) banner("⚡ CHARGED UP!");
     else { timeBonus+=15; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("⚡ CHARGED UP! +15 SECONDS"); } }
   else { h.innerHTML=getHeroSVG(); h.classList.remove("charged","turbo"); turboMode=false; }
 }
@@ -887,13 +963,13 @@ function tap(d){
   const test=entry+d, ansStr=String(cur.ans);
   if(test===ansStr){
     const dt=performance.now()-factShownAt; totalSolveMs+=dt; guessTaps=0;
-    qlog.push({ q:cur.text, op:cur.kind, ans:cur.ans, sec:Math.round(dt/10)/100, wrong:curWrong, phase:phase });
+    qlog.push({ q:cur.log||cur.text, op:cur.kind, ans:cur.ans, sec:Math.round(dt/10)/100, wrong:curWrong, phase:phase });
     correct++; smashed=correct; combo++; bestCombo=Math.max(bestCombo,combo);
     if(Coins.hero()==="gunner"){
       if(combo>0 && combo%ATOMIC_STREAK===0 && shells<SHELL_MAX){ shells++; updateShells(); banner("🔫 ATOMIC SHELL STORED! ("+shells+"/"+SHELL_MAX+")"); }
     } else if(op!=="skip" && combo>=ATOMIC_STREAK) setAtomic(true);
     if(op!=="skip" && combo>=TURBO_STREAK && !turboMode){ turboMode=true; $("hero").classList.add("turbo");
-      if(op==="mul") banner("🔥 TURBO MODE!");
+      if(isUntimed()) banner("🔥 TURBO MODE!");
       else { timeBonus+=25; if($("time-left")) $("time-left").textContent=Math.ceil(timeLeft); banner("🔥 TURBO MODE — +25 SECONDS!"); } }
     score += 10 + (combo-1)*2; updateHud();
     const hero=$("hero"); hero.classList.add("stomp"); setTimeout(()=>hero.classList.remove("stomp"),140);
@@ -914,12 +990,17 @@ function tap(d){
       // first-try right clears the fact; a missed fact stays in the pool and comes back later
       if(curWrong===0){ mulPool=mulPool.filter(f=>f.k!==cur.key); updateMulLeft(); }
       if(!mulPool.length){ clearInterval(timer); inputLocked=true; banner("✖️ ALL "+mulTotal+" FACTS CLEARED!"); setTimeout(()=>endGame(true), 1200); return; }
+    } else if(op==="word"||op==="dist"){
+      // first-try right clears the problem; a missed one comes back 3 problems later
+      const p=runQueue.shift(); if(curWrong>0) runQueue.splice(Math.min(3, runQueue.length), 0, p); updateLeft();
+      if(!runQueue.length){ clearInterval(timer); inputLocked=true; banner("🏆 ALL "+RUN_LEN+" PROBLEMS SOLVED!"); setTimeout(()=>endGame(true), 1200); return; }
     }
     showFact();
   } else if(ansStr.startsWith(test)){
     entry=test; $("entry").textContent=entry;
   } else {
     attempts++; curWrong++; combo=0; setAtomic(false); updateHud();
+    if(cur.step && curWrong===1){ const s=document.createElement("div"); s.className="stephint"; s.textContent=cur.step; $("fact-hint").appendChild(s); }   // show the steps after a miss
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
@@ -927,7 +1008,7 @@ function tap(d){
     guessTaps = (nowW - lastWrongAt < GUESS_WINDOW) ? guessTaps+1 : 1;
     lastWrongAt = nowW;
     if(guessTaps>=GUESS_LIMIT){ guessTaps=0;
-      if(op==="mul") takeover("🚫 NO GUESSING!  THINK IT THROUGH…", 2000, true);   // untimed: lock the pad instead
+      if(isUntimed()) takeover("🚫 NO GUESSING!  THINK IT THROUGH…", 2000, true);   // untimed: lock the pad instead
       else { timeBonus-=GUESS_PENALTY; takeover("🚫 NO GUESSING!  −"+GUESS_PENALTY+" SECONDS", 1100, true); } }
     return;
   }
@@ -938,7 +1019,7 @@ document.addEventListener("keydown", e=>{ if(!$("game").classList.contains("hidd
 
 function start(){
   if(op==="mul" && !mulTables.length){ const n=$("lock-note"); n.textContent="✖️ Pick at least one times table first"; n.classList.remove("hidden"); return; }
-  resetEndGameBtn(); $("endgame-btn").classList.toggle("hidden", op!=="mul");   // untimed Mult needs a way out
+  resetEndGameBtn(); $("endgame-btn").classList.toggle("hidden", !isUntimed());   // untimed modes need a way out
   score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
   phase="city"; cityProgress=0; boss=null; bossSpawnCount=0; bossesDefeated=0; captainWarmup=false; forcedNext=null;
   inputLocked=false; guessTaps=0; lastWrongAt=0; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
@@ -959,9 +1040,9 @@ function start(){
     return;
   }
   $("timebar").classList.remove("hidden"); $("time-stat").classList.remove("hidden"); $("herohp").classList.add("hidden");
-  const untimed = op==="mul";   // Mult: no clock — the game ends when every chosen fact is cleared
+  const untimed = isUntimed();   // Mult / Word / Break Apart: no clock — the game ends when every problem is cleared
   $("time-stat").querySelector("small").textContent = untimed ? "LEFT" : "SECONDS";
-  if(untimed){ timeLeft=999; buildMulPool(); updateMulLeft(); $("timebar").classList.add("hidden"); }
+  if(untimed){ timeLeft=999; if(op==="mul") buildMulPool(); else buildRun(); updateLeft(); $("timebar").classList.add("hidden"); }
   // Random starting boss each game so every villain gets screen time (HP still ramps within a game).
   bossOffset=randInt(0, (ROSTERS[op]||ROSTERS.add).length-1);
   roundStep=randInt(0, ROUND_PLAYLIST.length-1); if(op==="round") startRoundWave(); else buildSkyline();
@@ -972,7 +1053,7 @@ function start(){
       timeLeft=Math.max(0, duration+timeBonus-(Date.now()-startTs)/1000);
       $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/(duration+timeBonus))+"%";
     }
-    if(phase==="boss"){
+    if(phase==="boss" && op!=="word" && op!=="dist"){   // no roar timer while reading a story / array
       const since=(performance.now()-lastAnswerTs)/1000, frac=Math.min(1,since/ATTACK_INTERVAL);
       const cf=$("bosscharge-fill"); if(cf) cf.style.width=(frac*100)+"%";
       if(frac>=1){ combo=0; setAtomic(false); updateHud(); roar(); lastAnswerTs=performance.now(); }
@@ -1041,6 +1122,7 @@ function endGame(win){
   $("mysterybox").classList.add("hidden"); $("skip-progress").classList.add("hidden");
   if(op==="skip"){ $("e-big").textContent = win ? "⚙️💥" : "🦖💀"; $("e-title").textContent = win ? "VILLAIN DESTROYED!" : "THE VILLAIN WON…"; }
   else if(op==="mul"){ $("e-big").textContent = win ? "🦖✖️💥" : "🦖⏸️"; $("e-title").textContent = win ? "ALL "+mulTotal+" FACTS CLEARED!" : "STOPPED — "+mulPool.length+" OF "+mulTotal+" FACTS LEFT"; }
+  else if(op==="word"||op==="dist"){ $("e-big").textContent = win ? (op==="word"?"🦖📖💥":"🦖✂️💥") : "🦖⏸️"; $("e-title").textContent = win ? "ALL "+RUN_LEN+" PROBLEMS SOLVED!" : "STOPPED — "+runQueue.length+" OF "+RUN_LEN+" PROBLEMS LEFT"; }
   else { $("e-big").textContent="🦖💥"; $("e-title").textContent="RAMPAGE OVER!"; }
   const gotBox = op==="skip" && win && player==="jacob" && boss && boss.name==="Primal Wraith" && SkipGate.wraithWins()>=SKIP_MYSTERY && !Coins.isOwned("gunner");
   if(gotBox) awardMysteryBox();
@@ -1068,7 +1150,7 @@ function endGame(win){
   $("streakline").textContent = `Best streak ×${bestCombo} 🔥 · Kaiju defeated: ${bossesDefeated}`;
   // Untimed Mult runs aren't comparable to timed games, so they don't count toward the blocks record.
   const prevBest = kaijuBest.smashed;
-  const isRecord = player==="jacob" && op!=="mul" && smashed > prevBest;
+  const isRecord = player==="jacob" && !isUntimed() && smashed > prevBest;
   $("newbest").classList.toggle("hidden", !isRecord);
   if(isRecord) kaijuBest={smashed, secsPerCorrect:pace};
   // Beating a real (already-loaded) record earns a character request.
@@ -1118,12 +1200,13 @@ function logResult(acc, pace){
   const note=$("save-note");
   if(player==="test"){ note.textContent="🧪 Test run — not saved."; return; }
   if(!CONFIG.logResults){ note.textContent="Saving turned off."; return; }
-  const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":op==="mul"?"mult":op==="div"?"division":op==="skip"?"skip-counting":"mixed";
+  const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":op==="mul"?"mult":op==="div"?"division":op==="skip"?"skip-counting":op==="word"?"word problems":op==="dist"?"break apart":"mixed";
+  const runNote = `${RUN_LEN} problems${runQueue.length?`, stopped with ${runQueue.length} left`:""}`;
   const payload={
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: op==="mul" ? `mult tables ${mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} facts${mulPool.length?`, stopped with ${mulPool.length} left`:""})` : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: (op==="word"||op==="dist") ? `${opLabel} (${runNote})` : op==="mul" ? `mult tables ${mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} facts${mulPool.length?`, stopped with ${mulPool.length} left`:""})` : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
@@ -1197,7 +1280,7 @@ function awardCoins(){
   const bonusOK = solved>=10 && st.c<=4;   // bonuses only first 4 real sessions/day
 
   const parts=[];
-  const opMult = op==="round"?1.4 : (op==="mul"||op==="div")?1.6 : (op==="mix"?1.2:1.0);
+  const opMult = op==="round"?1.4 : (op==="mul"||op==="div")?1.6 : (op==="word"||op==="dist")?2.5 : (op==="mix"?1.2:1.0);   // word/break-apart: fewer, harder problems
   const rangeMult = range>=20 ? 1.4 : 1.0;
   const base = Math.round(Math.min(solved,25)*opMult*rangeMult);
   parts.push({label:"Blocks smashed", n:base});
@@ -1323,7 +1406,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v47";
+const BUILD="v48";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
