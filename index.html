@@ -220,16 +220,17 @@
   .fact-hint .cap{ font-size:13px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
   /* hint "spoken" by Godzilla: round face + speech bubble */
   .fact-hint .stephint{ display:flex; align-items:center; justify-content:center; gap:12px; margin:8px auto 4px; text-align:left;
-      font-size:23px; line-height:1.25; color:var(--gold); text-transform:none; letter-spacing:.3px; animation:hintpop .25s ease-out; }
-  .stephint img{ width:72px; height:72px; flex-shrink:0; border-radius:50%; border:3px solid #3fa9ff; box-shadow:0 0 16px rgba(63,169,255,.7); }
-  .stephint .bubble{ position:relative; max-width:340px; padding:10px 14px; background:#10211b; border:3px solid var(--gold); border-radius:14px; }
+      font-size:17px; line-height:1.3; color:var(--gold); text-transform:none; letter-spacing:.3px; animation:hintpop .25s ease-out; }
+  .stephint img{ width:52px; height:52px; flex-shrink:0; border-radius:50%; border:3px solid #3fa9ff; box-shadow:0 0 16px rgba(63,169,255,.7); }
+  .stephint .bubble{ position:relative; max-width:340px; padding:8px 12px; white-space:pre-line; background:#10211b; border:3px solid var(--gold); border-radius:14px; }
   .stephint .bubble::before{ content:""; position:absolute; left:-12px; top:50%; margin-top:-9px; border:9px solid transparent; border-left:0; border-right-color:var(--gold); }
   /* hint pop-up (full screen) */
   .hintmodal{ position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.78); }
   .hm-card{ width:100%; max-width:440px; text-align:center; animation:hintpop .3s ease-out; }
   .hm-card img{ width:160px; height:160px; border-radius:50%; border:5px solid #3fa9ff; box-shadow:0 0 30px rgba(63,169,255,.85); }
   .hm-bubble{ position:relative; margin:22px auto 22px; padding:18px 20px; background:#10211b; border:4px solid var(--gold); border-radius:20px;
-      font:800 32px/1.3 'Barlow Condensed',sans-serif; color:var(--gold); }
+      font:800 28px/1.35 'Barlow Condensed',sans-serif; color:var(--gold); white-space:pre-line; }
+  .hm-bubble .rule, .stephint .bubble .rule{ color:#fff; }   /* line 1 = the rule (white); the steps stay gold */
   .hm-bubble::before{ content:""; position:absolute; top:-18px; left:50%; margin-left:-16px; border:16px solid transparent; border-top:0; border-bottom-color:var(--gold); }
   #hm-go{ width:100%; font-size:26px; }
   /* stopwatch: paused while a hint shows; bar turns red past the target time */
@@ -573,20 +574,21 @@ function buildMulPool(){
 function factStrategy(x, y){
   const ORDER=[0,1,10,2,11,5,9,12,4,3,6,8,7];   // which factor makes the friendliest strategy
   const f = ORDER.indexOf(x)<=ORDER.indexOf(y) ? x : y, n = f===x ? y : x;
+  // Line 1 = the rule in plain words; then short steps; "???" is what he figures out.
   switch(f){
-    case 0:  return `💡 Anything × 0 = 0`;
-    case 1:  return `💡 Anything × 1 = itself`;
-    case 10: return `💡 ×10: put a 0 on the end of ${n}`;
-    case 2:  return `💡 ×2 = double: ${n} + ${n} = ?`;
-    case 11: return `💡 ×11 = ×10 + one more ${n}: ${n*10} + ${n} = ?`;
-    case 5:  return `💡 ×5 = half of ×10: half of ${n*10} = ?`;
-    case 9:  return `💡 ×9 = ×10 minus one ${n}: ${n*10} − ${n} = ?`;
-    case 12: return `💡 ×12 = ×10 + ×2: ${n*10} + ${n*2} = ?`;
-    case 4:  return `💡 ×4 = double, then double again: ${n} → ${n*2} → ?`;
-    case 3:  return `💡 ×3 = ×2 + one more ${n}: ${n*2} + ${n} = ?`;
-    case 6:  return `💡 ×6 = ×5 + one more ${n}: ${n*5} + ${n} = ?`;
-    case 8:  return `💡 ×8 = double ×4: 4×${n} = ${n*4}, doubled = ?`;
-    default: return `💡 ×7 = ×5 + ×2: ${n*5} + ${n*2} = ?`;
+    case 0:  return `Anything times 0 is always 0`;
+    case 1:  return `Anything times 1 stays the same number`;
+    case 10: return `x10 is easy!\nJust put a 0 on the end of ${n}`;
+    case 2:  return `x2 means double it\n${n} plus ${n} is ???`;
+    case 11: return `x11 is the same as x10, then one more ${n}\n${n} x 10 = ${n*10}\nAdd one more ${n} to get ???`;
+    case 5:  return `x5 is the same as x10 then split in half\n${n} x 10 = ${n*10}\nHalf of that is ???`;
+    case 9:  return `x9 is the same as x10, then take one ${n} away\n${n} x 10 = ${n*10}\nTake away ${n} to get ???`;
+    case 12: return `x12 is the same as x10 plus x2\n${n} x 10 = ${n*10}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
+    case 4:  return `x4 means double it, then double it again\nDouble ${n} is ${n*2}\nDouble that is ???`;
+    case 3:  return `x3 is the same as x2, then one more ${n}\n${n} x 2 = ${n*2}\nAdd one more ${n} to get ???`;
+    case 6:  return `x6 is the same as x5, then one more ${n}\n${n} x 5 = ${n*5}\nAdd one more ${n} to get ???`;
+    case 8:  return `x8 means double it three times\nDouble ${n} is ${n*2}\nDouble again is ${n*4}\nDouble one more time is ???`;
+    default: return `x7 is the same as x5 plus x2\n${n} x 5 = ${n*5}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
   }
 }
 function nextMul(){
@@ -634,25 +636,36 @@ function wordProblem(){
     const c=randInt(2,9), [o,m,[inner]]=pick(NESTS);
     return { story:`${V} has ${a} ${o[0]}. Each ${o[1]} holds ${b} ${m[0]}. Each ${m[1]} has ${c} ${inner}. How many ${inner} in all?`,
       text:`? ${inner}`, ans:a*b*c, log:`${a}×${b}×${c}`,
-      step:`💡 First: ${a} ${o[0]} × ${b} = ${a*b} ${m[0]}. Then ${a*b} × ${c} = ?` };
+      step:`First find out how many ${m[0]} there are
+${a} ${o[0]} with ${b} ${m[0]} each is ${a*b} ${m[0]}
+Now ${a*b} ${m[0]} with ${c} ${inner} each is ???` };
   }
   if(t<=60){   // rate × (two time periods)
     const r=randInt(2,9), h1=randInt(2,6), h2=randInt(1,4), h=h1+h2, h2s=h2+(h2===1?" hour":" hours");
     if(Math.random()<0.5) return { story:`${V} stomps ${r} buildings every hour. It stomps for ${h1} hours on Monday and ${h2s} on Tuesday. How many buildings does it stomp?`,
-      text:"? buildings", ans:r*h, log:`${r}×(${h1}+${h2})`, step:`💡 First: ${h1} + ${h2} = ${h} hours. Then ${h} × ${r} = ?` };
+      text:"? buildings", ans:r*h, log:`${r}×(${h1}+${h2})`, step:`First add up all the hours
+${h1} hours and ${h2} more is ${h} hours
+Now ${r} buildings every hour for ${h} hours is ???` };
     return { story:`A kaiju-blaster costs $${r} for each hour. Jacob rents one for ${h1} hours on Saturday and ${h2s} on Sunday. How much does he spend?`,
-      text:"$ ?", ans:r*h, log:`$${r}×(${h1}+${h2})`, step:`💡 First: ${h1} + ${h2} = ${h} hours. Then ${h} × $${r} = ?` };
+      text:"$ ?", ans:r*h, log:`$${r}×(${h1}+${h2})`, step:`First add up all the hours
+${h1} hours and ${h2} more is ${h} hours
+Now $${r} every hour for ${h} hours is ???` };
   }
   if(t<=80){   // multiply, then add or subtract
     const a=randInt(3,8), b=randInt(3,9), n=a*b;
     if(Math.random()<0.5){ const c=randInt(1,b); return { story:`${V} guards ${a} nests with ${b} eggs in each nest. ${c===1?"1 egg hatches":c+" eggs hatch"}. How many eggs are still in the nests?`,
-      text:"? eggs", ans:n-c, log:`${a}×${b}−${c}`, step:`💡 First: ${a} × ${b} = ${n} eggs. Then ${n} − ${c} = ?` }; }
+      text:"? eggs", ans:n-c, log:`${a}×${b}−${c}`, step:`First find all the eggs
+${a} nests with ${b} eggs each is ${n} eggs
+Take away the ${c} that hatched to get ???` }; }
     const c=randInt(2,9); return { story:`Jacob smashes ${a} towers with ${b} windows each. Then he smashes ${c} more windows. How many windows did he smash?`,
-      text:"? windows", ans:n+c, log:`${a}×${b}+${c}`, step:`💡 First: ${a} × ${b} = ${n} windows. Then ${n} + ${c} = ?` };
+      text:"? windows", ans:n+c, log:`${a}×${b}+${c}`, step:`First find the windows in the towers
+${a} towers with ${b} windows each is ${n} windows
+Add the ${c} more to get ???` };
   }
   const a=randInt(3,9), b=randInt(3,9);   // one step: equal groups
   return { story:`Jacob finds ${a} bags of energy cubes. Each bag has ${b} cubes. How many energy cubes does he have?`,
-    text:"? cubes", ans:a*b, log:`${a}×${b}`, step:`💡 ${a} groups of ${b}: ${a} × ${b} = ?` };
+    text:"? cubes", ans:a*b, log:`${a}×${b}`, step:`That's ${a} groups with ${b} in each group
+${a} x ${b} is ???` };
 }
 function arrayHTML(r, c, k){   // r rows × c columns, cut after row k (top part green, bottom gold)
   let h=`<div class="arr" style="grid-template-columns:repeat(${c},10px)">`;
@@ -662,10 +675,19 @@ function arrayHTML(r, c, k){   // r rows × c columns, cut after row k (top part
 function distProblem(){
   const r=randInt(3,9), c=randInt(3,9), k=randInt(1,r-1), j=r-k, t=randInt(1,100);
   const base={ hintHTML:`<div class="cap">✂️ ${r} rows of ${c} — broken apart</div>`+arrayHTML(r,c,k) };
-  if(t<=30) return Object.assign(base,{ text:`${r}×${c} = (${k}×${c}) + (?×${c})`, ans:j, log:`${r}×${c}=(${k}×${c})+(?×${c})`, step:`💡 ${r} rows = ${k} rows + ? rows` });
-  if(t<=45) return Object.assign(base,{ text:`${r}×${c} = (${k}×${c}) + (${j}×?)`, ans:c, log:`${r}×${c}=(${k}×${c})+(${j}×?)`, step:`💡 Every row has the same number of dots. Count one row!` });
-  if(t<=75) return Object.assign(base,{ text:`(${k}×${c}) + (${j}×${c}) = ?`, ans:r*c, log:`(${k}×${c})+(${j}×${c})`, step:`💡 ${k}×${c} = ${k*c} and ${j}×${c} = ${j*c}. Add them!` });
-  return Object.assign(base,{ text:`(${k}×${c}) + (${j}×${c}) = ?×${c}`, ans:r, log:`(${k}×${c})+(${j}×${c})=?×${c}`, step:`💡 ${k} rows + ${j} rows = ? rows` });
+  if(t<=30) return Object.assign(base,{ text:`${r}×${c} = (${k}×${c}) + (?×${c})`, ans:j, log:`${r}×${c}=(${k}×${c})+(?×${c})`, step:`The whole array has ${r} rows
+The top part has ${k} rows
+The bottom part has the rest, which is ???` });
+  if(t<=45) return Object.assign(base,{ text:`${r}×${c} = (${k}×${c}) + (${j}×?)`, ans:c, log:`${r}×${c}=(${k}×${c})+(${j}×?)`, step:`Every row has the same number of dots
+Count the dots in just one row
+That number is ???` });
+  if(t<=75) return Object.assign(base,{ text:`(${k}×${c}) + (${j}×${c}) = ?`, ans:r*c, log:`(${k}×${c})+(${j}×${c})`, step:`Find each part, then add them together
+Top part: ${k} x ${c} = ${k*c}
+Bottom part: ${j} x ${c} = ${j*c}
+Add them up to get ???` });
+  return Object.assign(base,{ text:`(${k}×${c}) + (${j}×${c}) = ?×${c}`, ans:r, log:`(${k}×${c})+(${j}×${c})=?×${c}`, step:`Put the two parts back together
+The top has ${k} rows and the bottom has ${j} rows
+All together that's ??? rows` });
 }
 function buildRun(){
   runQueue=[]; for(let i=0;i<RUN_LEN;i++){ const p = op==="word" ? wordProblem() : distProblem(); p.kind=op; runQueue.push(p); }
@@ -1085,9 +1107,9 @@ function tap(d){
     if(cur.step && curWrong===1){   // Godzilla "says" the steps / strategy after a miss
       const h=$("fact-hint"), s=document.createElement("div"), b=document.createElement("span");
       s.className="stephint"; s.innerHTML='<img src="kaiju-face-sm.png?v=2" alt="">';
-      b.className="bubble"; b.textContent=cur.step.replace(/^💡\s*/,""); s.appendChild(b);
+      b.className="bubble"; fillTip(b, cur.step); s.appendChild(b);
       h.appendChild(s); h.classList.remove("hidden");
-      openHintModal(b.textContent); }   // big pop-up; the game waits until he taps "Got it"
+      openHintModal(cur.step); }   // big pop-up; the game waits until he taps "Got it"
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
@@ -1108,9 +1130,15 @@ document.addEventListener("keydown", e=>{
 
 /* ---- hint pop-up: freezes the game (pad locked, stopwatch paused, no boss roar) until "Got it" ---- */
 let hintOpen=false;
+// Tip text: first line is the rule (white), the rest are the steps (gold), one per line.
+function fillTip(el, text){
+  const lines=String(text).split("\n"); el.textContent="";
+  const r=document.createElement("div"); r.className="rule"; r.textContent=lines[0]; el.appendChild(r);
+  if(lines.length>1){ const st=document.createElement("div"); st.textContent=lines.slice(1).join("\n"); el.appendChild(st); }
+}
 function openHintModal(text){
   hintOpen=true; inputLocked=true; pauseClock();
-  $("hm-text").textContent=text; $("hintmodal").classList.remove("hidden");
+  fillTip($("hm-text"), text); $("hintmodal").classList.remove("hidden");
 }
 function closeHintModal(){
   if(!hintOpen) return;
@@ -1554,7 +1582,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v53";
+const BUILD="v54";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
