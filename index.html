@@ -216,11 +216,14 @@
   .fact-hint.story{ font-size:18px; line-height:1.25; text-transform:none; letter-spacing:.3px; color:var(--ink); max-width:480px; margin:4px auto 2px; }
   .fact-hint .cap{ font-size:13px; color:var(--gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
   /* hint "spoken" by Godzilla: round face + speech bubble */
-  .fact-hint .stephint{ display:flex; align-items:center; justify-content:center; gap:10px; margin-top:6px; text-align:left;
-      font-size:17px; color:var(--gold); text-transform:none; letter-spacing:.3px; animation:hintpop .25s ease-out; }
-  .stephint img{ width:46px; height:46px; flex-shrink:0; border-radius:50%; border:2px solid #3fa9ff; box-shadow:0 0 12px rgba(63,169,255,.65); }
-  .stephint .bubble{ position:relative; max-width:300px; padding:6px 10px; background:#10211b; border:2px solid var(--gold); border-radius:12px; }
-  .stephint .bubble::before{ content:""; position:absolute; left:-9px; top:50%; margin-top:-7px; border:7px solid transparent; border-left:0; border-right-color:var(--gold); }
+  .fact-hint .stephint{ display:flex; align-items:center; justify-content:center; gap:12px; margin:8px auto 4px; text-align:left;
+      font-size:23px; line-height:1.25; color:var(--gold); text-transform:none; letter-spacing:.3px; animation:hintpop .25s ease-out; }
+  .stephint img{ width:72px; height:72px; flex-shrink:0; border-radius:50%; border:3px solid #3fa9ff; box-shadow:0 0 16px rgba(63,169,255,.7); }
+  .stephint .bubble{ position:relative; max-width:340px; padding:10px 14px; background:#10211b; border:3px solid var(--gold); border-radius:14px; }
+  .stephint .bubble::before{ content:""; position:absolute; left:-12px; top:50%; margin-top:-9px; border:9px solid transparent; border-left:0; border-right-color:var(--gold); }
+  /* stopwatch: paused while a hint shows; bar turns red past the target time */
+  #time-stat.paused{ opacity:.55; }
+  .timebar.over>div{ background:var(--red); }
   @keyframes hintpop{ from{ transform:scale(.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
   .arr{ display:inline-grid; gap:3px; justify-content:center; }
   .arr i{ display:block; width:10px; height:10px; border-radius:50%; background:#5fd476; }
@@ -568,12 +571,23 @@ function nextMul(){
   return {text:`${x} × ${y}`, ans:x*y, kind:"mul", key:f.k, step:factStrategy(x,y)};
 }
 function mulLeft(){ return mulPool.reduce((s,f)=>s+f.need,0); }
-function updateMulLeft(){ $("time-left").textContent=mulLeft(); }
+function updateMulLeft(){ updateHud(); }
 
 /* ---- Word problems & Break Apart: untimed runs of RUN_LEN problems; a missed one comes back a few problems later ---- */
 const RUN_LEN = 10;
 let runQueue=[];
 const isUntimed = ()=> op==="mul" || op==="word" || op==="dist";
+// Stopwatch for the untimed modes: counts UP, pauses while Godzilla's hint is showing, target time to beat.
+const PAR_SEC = { mul:180, word:300, dist:300 };
+let runStart=0, pausedMs=0, pauseAt=0, runFinal=null, runWon=false, parPassed=false;
+function runElapsed(){ return runFinal!=null ? runFinal : ((pauseAt||performance.now()) - runStart - pausedMs)/1000; }
+function fmtClock(s){ s=Math.floor(s); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function pauseClock(){ if(isUntimed() && !pauseAt){ pauseAt=performance.now(); $("time-stat").classList.add("paused"); } }
+function resumeClock(){ if(pauseAt){ pausedMs+=performance.now()-pauseAt; pauseAt=0; $("time-stat").classList.remove("paused"); } }
+function stopClock(){ if(runFinal==null){ resumeClock(); runFinal=runElapsed(); } }
+function bestTimeKey(){ return op==="mul" ? "mul:"+(mulTricky?"tricky":mulTables.join(",")) : op; }
+function bestTimes(){ try{ return JSON.parse(localStorage.getItem("kb_best_times")||"{}"); }catch(e){ return {}; } }
+function leftCount(){ return op==="mul" ? mulLeft() : runQueue.length; }
 const pick = a => a[randInt(0, a.length-1)];
 const VILLAINS = ["Megabolt","Stackjaw","Gridlock","Swarmoth","Hydraxis","Tallyhorn","Minuscrab","Sharewolf"];
 // [plural, singular] for each layer of a "groups of groups" story
@@ -628,14 +642,14 @@ function distProblem(){
 function buildRun(){
   runQueue=[]; for(let i=0;i<RUN_LEN;i++){ const p = op==="word" ? wordProblem() : distProblem(); p.kind=op; runQueue.push(p); }
 }
-function updateLeft(){ $("time-left").textContent = op==="mul" ? mulLeft() : runQueue.length; }
+function updateLeft(){ updateHud(); }
 // End Game (Mult only): first tap arms it, second tap within 3s ends the run
 let endArmTimer=null;
 function resetEndGameBtn(){ clearTimeout(endArmTimer); const b=$("endgame-btn"); b.classList.remove("confirm"); b.textContent="⏹ END GAME"; }
 $("endgame-btn").onclick=()=>{
   const b=$("endgame-btn");
   if(!b.classList.contains("confirm")){ b.classList.add("confirm"); b.textContent="TAP AGAIN TO END"; clearTimeout(endArmTimer); endArmTimer=setTimeout(resetEndGameBtn, 3000); return; }
-  resetEndGameBtn(); clearInterval(timer); endGame(false);
+  resetEndGameBtn(); clearInterval(timer); stopClock(); endGame(false);
 };
 
 /* ---- who's playing: dedicated first screen ---- */
@@ -904,7 +918,8 @@ function smashNext(){
   const intact=buildings.filter(b=>!b.classList.contains("smashed"));
   if(intact[0]){ intact[0].classList.add("smashed"); intact[0].textContent="💥"; }
 }
-function updateHud(){ $("score").textContent=score; $("smashed").textContent=smashed; $("combo").textContent="×"+combo; }
+// In the untimed modes the SMASHED slot shows how many are LEFT (the clock slot is the stopwatch).
+function updateHud(){ $("score").textContent=score; $("smashed").textContent = isUntimed() ? leftCount() : smashed; $("combo").textContent="×"+combo; }
 function banner(t){ const b=$("banner"); b.textContent=t; b.classList.remove("on"); void b.offsetWidth; b.classList.add("on");
   clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>b.classList.remove("on"),1100); }
 function takeover(text, ms, penalty){
@@ -1001,6 +1016,7 @@ function tap(d){
   const test=entry+d, ansStr=String(cur.ans);
   if(test===ansStr){
     const dt=performance.now()-factShownAt; totalSolveMs+=dt; guessTaps=0;
+    resumeClock();   // hint answered — stopwatch runs again
     qlog.push({ q:cur.log||cur.text, op:cur.kind, ans:cur.ans, sec:Math.round(dt/10)/100, wrong:curWrong, phase:phase });
     correct++; smashed=correct; combo++; bestCombo=Math.max(bestCombo,combo);
     if(Coins.hero()==="gunner"){
@@ -1027,11 +1043,11 @@ function tap(d){
     if(op==="mul"){
       // first-try right clears the fact; a missed fact stays in the pool and comes back later
       if(curWrong===0){ const f=mulPool.find(f=>f.k===cur.key); if(f && --f.need<=0) mulPool=mulPool.filter(g=>g!==f); updateMulLeft(); }
-      if(!mulPool.length){ clearInterval(timer); inputLocked=true; banner(mulTricky?"⭐ TRICKY FACTS CRUSHED!":"✖️ ALL "+mulTotal+" FACTS CLEARED!"); setTimeout(()=>endGame(true), 1200); return; }
+      if(!mulPool.length){ clearInterval(timer); stopClock(); runWon=true; inputLocked=true; banner(mulTricky?"⭐ TRICKY FACTS CRUSHED!":"✖️ ALL "+mulTotal+" FACTS CLEARED!"); setTimeout(()=>endGame(true), 1200); return; }
     } else if(op==="word"||op==="dist"){
       // first-try right clears the problem; a missed one comes back 3 problems later
       const p=runQueue.shift(); if(curWrong>0) runQueue.splice(Math.min(3, runQueue.length), 0, p); updateLeft();
-      if(!runQueue.length){ clearInterval(timer); inputLocked=true; banner("🏆 ALL "+RUN_LEN+" PROBLEMS SOLVED!"); setTimeout(()=>endGame(true), 1200); return; }
+      if(!runQueue.length){ clearInterval(timer); stopClock(); runWon=true; inputLocked=true; banner("🏆 ALL "+RUN_LEN+" PROBLEMS SOLVED!"); setTimeout(()=>endGame(true), 1200); return; }
     }
     showFact();
   } else if(ansStr.startsWith(test)){
@@ -1042,7 +1058,8 @@ function tap(d){
       const h=$("fact-hint"), s=document.createElement("div"), b=document.createElement("span");
       s.className="stephint"; s.innerHTML='<img src="kaiju-face-sm.png?v=1" alt="">';
       b.className="bubble"; b.textContent=cur.step.replace(/^💡\s*/,""); s.appendChild(b);
-      h.appendChild(s); h.classList.remove("hidden"); }
+      h.appendChild(s); h.classList.remove("hidden");
+      pauseClock(); }   // the stopwatch waits while he reads the hint
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
@@ -1083,8 +1100,12 @@ function start(){
   }
   $("timebar").classList.remove("hidden"); $("time-stat").classList.remove("hidden"); $("herohp").classList.add("hidden");
   const untimed = isUntimed();   // Mult / Word / Break Apart: no clock — the game ends when every problem is cleared
-  $("time-stat").querySelector("small").textContent = untimed ? "LEFT" : "SECONDS";
-  if(untimed){ timeLeft=999; if(op==="mul") buildMulPool(); else buildRun(); updateLeft(); $("timebar").classList.add("hidden"); }
+  $("time-stat").querySelector("small").textContent = untimed ? "TIME" : "SECONDS";
+  $("smashed").parentNode.querySelector("small").textContent = untimed ? "LEFT" : "SMASHED";
+  $("time-stat").classList.remove("paused"); $("timebar").classList.remove("over");
+  runFinal=null; runWon=false; pausedMs=0; pauseAt=0; parPassed=false;
+  if(untimed){ timeLeft=999; if(op==="mul") buildMulPool(); else buildRun(); updateLeft();
+    runStart=performance.now(); $("time-left").textContent="0:00"; $("time-fill").style.width="0%"; }
   // Random starting boss each game so every villain gets screen time (HP still ramps within a game).
   bossOffset=randInt(0, (ROSTERS[op]||ROSTERS.add).length-1);
   roundStep=randInt(0, ROUND_PLAYLIST.length-1); if(op==="round") startRoundWave(); else buildSkyline();
@@ -1094,6 +1115,11 @@ function start(){
     if(!untimed){
       timeLeft=Math.max(0, duration+timeBonus-(Date.now()-startTs)/1000);
       $("time-left").textContent=Math.ceil(timeLeft); $("time-fill").style.width=(100*timeLeft/(duration+timeBonus))+"%";
+    } else if(runFinal==null){
+      // stopwatch: the bar fills toward the target time, then turns red (he keeps playing)
+      const e=runElapsed(), par=PAR_SEC[op];
+      $("time-left").textContent=(pauseAt?"⏸ ":"")+fmtClock(e); $("time-fill").style.width=Math.min(100,100*e/par)+"%";
+      if(e>par && !parPassed){ parPassed=true; $("timebar").classList.add("over"); banner("⏱️ PAST "+fmtClock(par)+" — KEEP GOING!"); }
     }
     if(phase==="boss" && op!=="word" && op!=="dist"){   // no roar timer while reading a story / array
       const since=(performance.now()-lastAnswerTs)/1000, frac=Math.min(1,since/ATTACK_INTERVAL);
@@ -1193,8 +1219,17 @@ function endGame(win){
   // Untimed Mult runs aren't comparable to timed games, so they don't count toward the blocks record.
   const prevBest = kaijuBest.smashed;
   const isRecord = player==="jacob" && !isUntimed() && smashed > prevBest;
-  $("newbest").classList.toggle("hidden", !isRecord);
+  $("newbest").textContent="🏆 NEW BEST!"; $("newbest").classList.toggle("hidden", !isRecord);
   if(isRecord) kaijuBest={smashed, secsPerCorrect:pace};
+  if(isUntimed()){   // stopwatch modes: show the time, the target, and the best time (finished runs only)
+    const t=runElapsed(), par=PAR_SEC[op], key=bestTimeKey(), bt=bestTimes(), prev=bt[key];
+    const isBestTime = runWon && (prev==null || t<prev);
+    if(isBestTime && player==="jacob"){ bt[key]=Math.round(t*10)/10; try{ localStorage.setItem("kb_best_times", JSON.stringify(bt)); }catch(e){} }
+    const best = (isBestTime && player==="jacob") ? t : prev;
+    $("streakline").textContent += ` · ⏱️ ${fmtClock(t)}${runWon?(t<=par?" — beat the "+fmtClock(par)+" target!":" (target "+fmtClock(par)+")"):""}`
+      + (best!=null ? ` · Best ${fmtClock(best)}` : "");
+    if(isBestTime && prev!=null){ $("newbest").textContent="⏱️ NEW BEST TIME!"; $("newbest").classList.remove("hidden"); }
+  }
   // Beating a real (already-loaded) record earns a character request.
   showCharReq(isRecord && prevBest>0);
   $("coinchip").classList.remove("hidden");
@@ -1243,12 +1278,13 @@ function logResult(acc, pace){
   if(player==="test"){ note.textContent="🧪 Test run — not saved."; return; }
   if(!CONFIG.logResults){ note.textContent="Saving turned off."; return; }
   const opLabel = op==="add"?"add":op==="sub"?"sub":op==="round"?"rounding":op==="mul"?"mult":op==="div"?"division":op==="skip"?"skip-counting":op==="word"?"word problems":op==="dist"?"break apart":"mixed";
-  const runNote = `${RUN_LEN} problems${runQueue.length?`, stopped with ${runQueue.length} left`:""}`;
+  const timeNote = isUntimed() ? `, time ${fmtClock(runElapsed())}` : "";
+  const runNote = `${RUN_LEN} problems${runQueue.length?`, stopped with ${runQueue.length} left`:""}${timeNote}`;
   const payload={
     time: new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }),
     sessionId: sessionId,
     student:CONFIG.student, week:CONFIG.week, activity:ACTIVITY,
-    mode: (op==="word"||op==="dist") ? `${opLabel} (${runNote})` : op==="mul" ? `mult tables ${mulTricky?"tricky":mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} ${mulTricky?"answers":"facts"}${mulPool.length?`, stopped with ${mulLeft()} left`:""})`   /* keep the "mult tables" prefix: the .gs record lookup skips it */ : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
+    mode: (op==="word"||op==="dist") ? `${opLabel} (${runNote})` : op==="mul" ? `mult tables ${mulTricky?"tricky":mulTables.length===12?"1-12":mulTables.join(",")} (${mulTotal} ${mulTricky?"answers":"facts"}${mulPool.length?`, stopped with ${mulLeft()} left`:""}${timeNote})`   /* keep the "mult tables" prefix: the .gs record lookup skips it */ : ["round","div","skip"].indexOf(op)>=0 ? `${opLabel}` : `${opLabel} ≤${range}, ${duration}s`,
     op: op, range: range, duration: duration,
     overall:`${smashed} smashed · ${bossesDefeated} kaiju`, percent:acc,
     addsub:`${qlog.filter(x=>x.wrong===0).length}/${qlog.length}`, smashed:smashed, secsPerCorrect:(pace!=null?pace:""),
@@ -1361,7 +1397,10 @@ function awardCoins(){
     Coins.set("kb_days", days);
   }
 
-  const total = base+acc+spd+rec+cons;
+  let clk=0;   // stopwatch modes: finishing every problem under the target time
+  if(bonusOK && isUntimed() && runWon && runElapsed()<=PAR_SEC[op]){ clk=10; parts.push({label:"Beat the clock ⏱️", n:clk}); }
+
+  const total = base+acc+spd+rec+cons+clk;
   return { total, parts };
 }
 
@@ -1448,7 +1487,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v50";
+const BUILD="v51";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
