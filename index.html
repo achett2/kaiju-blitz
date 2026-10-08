@@ -589,7 +589,7 @@ function factStrategy(x, y){
     case 0:  return `Anything times 0 is always 0`;
     case 1:  return `Anything times 1 stays the same number`;
     case 10: return `x10 is easy!\nJust put a 0 on the end of ${n}`;
-    case 2:  return `x2 means double it\n${n} plus ${n} is ???`;
+    case 2:  return `x2 means double it,\nDouble means add the number to itself\nSo add ${n} and ${n}\n${n} plus ${n} is ???`;
     case 11: return `x11 means x10 first,\n${n} times 10 is ${n*10}\nThen add one more ${n}\n${n*10} plus ${n} is ???`;
     case 5:  return `x5 means x10 first,\n${n} times 10 is ${n*10}\nThen split it in half\nHalf of ${n*10} is ???`;
     case 9:  return `x9 means x10 first,\n${n} times 10 is ${n*10}\nThen take away one ${n}\n${n*10} take away ${n} is ???`;
@@ -1594,7 +1594,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v60";
+const BUILD="v61";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
