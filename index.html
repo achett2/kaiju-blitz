@@ -595,7 +595,7 @@ function factStrategy(x, y){
     case 9:  return `x9 is the same as x10, then take one ${n} away\n${n} x 10 = ${n*10}\nTake away ${n} to get ???`;
     case 12: return `x12 is the same as x10 plus x2\n${n} x 10 = ${n*10}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
     case 4:  return `x4 means double it once,\nDouble ${n} is ${n*2}\nThen double it again\nDouble ${n*2} is ???`;
-    case 3:  return `x3 is the same as x2, then one more ${n}\n${n} x 2 = ${n*2}\nAdd one more ${n} to get ???`;
+    case 3:  return `x3 means double it once,\nDouble ${n} is ${n*2}\nThen add one more ${n}\n${n*2} plus ${n} is ???`;
     case 6:  return `x6 is the same as x5, then one more ${n}\n${n} x 5 = ${n*5}\nAdd one more ${n} to get ???`;
     case 8:  return `x8 means double it once,\nDouble ${n} is ${n*2}\nThen double it again\nDouble ${n*2} is ${n*4}\nThen double it one more time\nDouble ${n*4} is ???`;
     default: return `x7 is the same as x5 plus x2\n${n} x 5 = ${n*5}\n${n} x 2 = ${n*2}\nAdd them up to get ???`;
@@ -1594,7 +1594,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v58";
+const BUILD="v59";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
