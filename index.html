@@ -233,6 +233,7 @@
   .hm-bubble .rule, .stephint .bubble .rule{ color:#fff; }   /* line 1 = the rule (white); the steps stay gold */
   .hm-bubble .tipline + .tipline{ margin-top:1em; }          /* a blank line's worth of space between tip lines */
   .stephint .bubble .tipline + .tipline{ margin-top:.6em; }
+  .fact-hint.big .stephint{ font-family:'Barlow Condensed',sans-serif; text-shadow:none; color:var(--gold); }   /* skip mode's big "Count by" header shouldn't restyle the tip */
   .hm-bubble::before{ content:""; position:absolute; top:-18px; left:50%; margin-left:-16px; border:16px solid transparent; border-top:0; border-bottom-color:var(--gold); }
   #hm-go{ width:100%; font-size:26px; }
   /* stopwatch: paused while a hint shows; bar turns red past the target time */
@@ -935,7 +936,9 @@ function nextSkip(){
   const blank=randInt(1,4);                                // hide a term (never the first)
   const ans=seq[blank];
   const shown=seq.map((n,i)=> i===blank ? "__" : n).join(", ");
-  return {text:shown, ans:ans, kind:"skip", hint:"Count by "+step+"s"};
+  const prev=seq[blank-1];                                 // the number just before the blank is always shown
+  return {text:shown, ans:ans, kind:"skip", hint:"Count by "+step+"s",
+    step:`Counting by ${step}s means add ${step} each time\nThe number before the blank is ${prev}\n${prev} plus ${step} is ???`};
 }
 function nextFact(){
   if(op==="skip") return nextSkip();
@@ -1258,6 +1261,7 @@ function endDuel(win){
 }
 
 function endGame(win){
+  hintOpen=false; $("hintmodal").classList.add("hidden");   // e.g. the villain's strike ended the duel while a hint was up
   inputLocked=false; clearTimeout(takeoverTimer); $("takeover").classList.add("hidden");
   $("game").classList.add("hidden"); $("end").classList.remove("hidden");
   $("mysterybox").classList.add("hidden"); $("skip-progress").classList.add("hidden");
@@ -1583,7 +1587,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v56";
+const BUILD="v57";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
