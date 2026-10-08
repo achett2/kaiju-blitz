@@ -224,6 +224,14 @@
   .stephint img{ width:72px; height:72px; flex-shrink:0; border-radius:50%; border:3px solid #3fa9ff; box-shadow:0 0 16px rgba(63,169,255,.7); }
   .stephint .bubble{ position:relative; max-width:340px; padding:10px 14px; background:#10211b; border:3px solid var(--gold); border-radius:14px; }
   .stephint .bubble::before{ content:""; position:absolute; left:-12px; top:50%; margin-top:-9px; border:9px solid transparent; border-left:0; border-right-color:var(--gold); }
+  /* hint pop-up (full screen) */
+  .hintmodal{ position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(0,0,0,.78); }
+  .hm-card{ width:100%; max-width:440px; text-align:center; animation:hintpop .3s ease-out; }
+  .hm-card img{ width:160px; height:160px; border-radius:50%; border:5px solid #3fa9ff; box-shadow:0 0 30px rgba(63,169,255,.85); }
+  .hm-bubble{ position:relative; margin:22px auto 22px; padding:18px 20px; background:#10211b; border:4px solid var(--gold); border-radius:20px;
+      font:800 32px/1.3 'Barlow Condensed',sans-serif; color:var(--gold); }
+  .hm-bubble::before{ content:""; position:absolute; top:-18px; left:50%; margin-left:-16px; border:16px solid transparent; border-top:0; border-bottom-color:var(--gold); }
+  #hm-go{ width:100%; font-size:26px; }
   /* stopwatch: paused while a hint shows; bar turns red past the target time */
   #time-stat.paused{ opacity:.55; }
   .timebar.over>div{ background:var(--red); }
@@ -273,6 +281,14 @@
 <div class="wrap">
   <div id="buildtag"></div>
   <div id="takeover" class="takeover hidden"><div id="takeover-text"></div></div>
+  <!-- Godzilla's hint pop-up: the game waits until Jacob taps the button -->
+  <div id="hintmodal" class="hintmodal hidden" role="dialog" aria-modal="true">
+    <div class="hm-card">
+      <img src="kaiju-face-sm.png?v=2" alt="">
+      <div class="hm-bubble" id="hm-text"></div>
+      <button class="start-btn" id="hm-go">GOT IT! KEEP GOING 🦖</button>
+    </div>
+  </div>
   <h1>🦖 KAIJU BLITZ</h1>
   <div class="coinchip" id="coinchip">☢️ <span id="coin-bal">0</span></div>
   <p class="best" id="best-banner">Loading record…</p>
@@ -1068,10 +1084,10 @@ function tap(d){
     attempts++; curWrong++; combo=0; setAtomic(false); updateHud();
     if(cur.step && curWrong===1){   // Godzilla "says" the steps / strategy after a miss
       const h=$("fact-hint"), s=document.createElement("div"), b=document.createElement("span");
-      s.className="stephint"; s.innerHTML='<img src="kaiju-face-sm.png?v=1" alt="">';
+      s.className="stephint"; s.innerHTML='<img src="kaiju-face-sm.png?v=2" alt="">';
       b.className="bubble"; b.textContent=cur.step.replace(/^💡\s*/,""); s.appendChild(b);
       h.appendChild(s); h.classList.remove("hidden");
-      pauseClock(); }   // the stopwatch waits while he reads the hint
+      openHintModal(b.textContent); }   // big pop-up; the game waits until he taps "Got it"
     const e=$("entry"); e.textContent=d; e.classList.add("bad"); entry="";
     setTimeout(()=>{ e.innerHTML="&nbsp;"; e.classList.remove("bad"); },260);
     if(op==="skip"){ villainStrike(); return; }   // Megabolt strikes back instead of a time penalty
@@ -1086,9 +1102,25 @@ function tap(d){
   attempts++;
 }
 $("pad").querySelectorAll("button").forEach(b=> b.onclick=()=>tap(b.textContent));
-document.addEventListener("keydown", e=>{ if(!$("game").classList.contains("hidden") && /^[0-9]$/.test(e.key)) tap(e.key); });
+document.addEventListener("keydown", e=>{
+  if(hintOpen){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); closeHintModal(); } return; }
+  if(!$("game").classList.contains("hidden") && /^[0-9]$/.test(e.key)) tap(e.key); });
+
+/* ---- hint pop-up: freezes the game (pad locked, stopwatch paused, no boss roar) until "Got it" ---- */
+let hintOpen=false;
+function openHintModal(text){
+  hintOpen=true; inputLocked=true; pauseClock();
+  $("hm-text").textContent=text; $("hintmodal").classList.remove("hidden");
+}
+function closeHintModal(){
+  if(!hintOpen) return;
+  hintOpen=false; inputLocked=false; $("hintmodal").classList.add("hidden");
+  resumeClock(); lastAnswerTs=performance.now();   // back to the game; the small hint stays above the question
+}
+$("hm-go").onclick=closeHintModal;
 
 function start(){
+  hintOpen=false; $("hintmodal").classList.add("hidden");
   if(op==="mul" && !mulTables.length && !mulTricky){ const n=$("lock-note"); n.textContent="✖️ Pick at least one times table first"; n.classList.remove("hidden"); return; }
   resetEndGameBtn(); $("endgame-btn").classList.toggle("hidden", !isUntimed());   // untimed modes need a way out
   score=0; combo=0; bestCombo=0; smashed=0; correct=0; attempts=0; totalSolveMs=0; timeLeft=duration; atomicMode=false; timeBonus=0; turboMode=false;
@@ -1133,7 +1165,7 @@ function start(){
       $("time-left").textContent=(pauseAt?"⏸ ":"")+fmtClock(e); $("time-fill").style.width=Math.min(100,100*e/par)+"%";
       if(e>par && !parPassed){ parPassed=true; $("timebar").classList.add("over"); banner("⏱️ PAST "+fmtClock(par)+" — KEEP GOING!"); }
     }
-    if(phase==="boss" && op!=="word" && op!=="dist"){   // no roar timer while reading a story / array
+    if(phase==="boss" && op!=="word" && op!=="dist" && !hintOpen){   // no roar timer while reading a story / array / hint
       const since=(performance.now()-lastAnswerTs)/1000, frac=Math.min(1,since/ATTACK_INTERVAL);
       const cf=$("bosscharge-fill"); if(cf) cf.style.width=(frac*100)+"%";
       if(frac>=1){ combo=0; setAtomic(false); updateHud(); roar(); lastAnswerTs=performance.now(); }
@@ -1522,7 +1554,7 @@ $("go").onclick=start;
 $("again").onclick=()=>{ $("best-banner").style.display=""; $("end").classList.add("hidden"); $("start").classList.add("hidden"); $("who").classList.remove("hidden"); $("coinchip").classList.remove("hidden"); updateCoinUI(); Coins.refresh(); renderBestBanner(); };
 loadBest();
 refreshLocks();
-const BUILD="v52";
+const BUILD="v53";
 $("buildtag").textContent="build "+BUILD;
 
 /* ---- animated intro (cutscene) ---- */
